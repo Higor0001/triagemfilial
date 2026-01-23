@@ -13,10 +13,12 @@ export default function Home() {
     concorrencia600ml: "",
     concorrencia330ml: "",
     caixaConcorrencia: "",
-    bicadaHnk: "",
     caminhao: "",
     turno: "Matutino",
     operador: "",
+    frete: false,
+    motorista: "",
+    data: "",
   })
   const [connectionStatus, setConnectionStatus] = useState("online")
   const [pendingUploads, setPendingUploads] = useState(0)
@@ -28,9 +30,12 @@ export default function Home() {
     concorrencia600ml: "0",
     concorrencia330ml: "0",
     caixaConcorrencia: "",
-    bicadaHnk: "0",
     turno: "Matutino",
     operador: "",
+    frete: false,
+    motorista: "",
+    refugoAtrasado: false,
+    dataRefugo: "",
   })
   const [showRefugoDialog, setShowRefugoDialog] = useState(false)
   const [currentProcessedPhotos, setCurrentProcessedPhotos] = useState([])
@@ -38,7 +43,78 @@ export default function Home() {
   const [isSendingReport, setIsSendingReport] = useState(false) // Novo estado para o botao de envio de relatorio
   const [showCustomTruck, setShowCustomTruck] = useState(false) // Estado para mostrar campo de caminhao personalizado
   const [lastSentMessageId, setLastSentMessageId] = useState(null) // ID da ultima mensagem enviada ao Telegram
-  const operatorOptions = ["Operador 01 - 0001", "Operador 02 - 0002", "Operador 03 - 0003"]
+  const [lastSentTelegramInfo, setLastSentTelegramInfo] = useState({
+    messageId: null,
+    buttonId: null,
+    bot: "",
+    chatId: "",
+  })
+  const [showTermsPopup, setShowTermsPopup] = useState(false)
+  const [termsChecked, setTermsChecked] = useState(false)
+  const operatorCatalog = [
+    { name: "PEDRO LIMA FARIAS", matricula: "000382", turno: "Vespertino" },
+    { name: "LUCAS PEREIRA DOS SANTOS", matricula: "000364", turno: "Vespertino" },
+    { name: "IGOR SIMOES TELLES", matricula: "000376", turno: "Vespertino" },
+    { name: "RENAN DEFANTE", matricula: "000205", turno: "Vespertino" },
+    { name: "EDUARDO PINTO VIANA", matricula: "000335", turno: "Matutino" },
+    { name: "ALEXANDRE HIGOR COSTA QUEIROZ", matricula: "000357", turno: "Matutino" },
+    { name: "CARLOS HENRIQUE PROCOPIO PINTO", matricula: "000354", turno: "Matutino" },
+  ]
+  const driverList = [
+    { matricula: "173", nome: "EZIO MARIANO BRITES" },
+    { matricula: "186", nome: "JONATHAN DE JESUS MOREIRA" },
+    { matricula: "213", nome: "JULIANO TEIXEIRA VICTORIO" },
+    { matricula: "219", nome: "LUCAS GOMES DA SILVA" },
+    { matricula: "262", nome: "VINICIUS RAMOS MEUS" },
+    { matricula: "317", nome: "ANTONIO MARCOS MOREIRA RAMOS" },
+    { matricula: "316", nome: "EUDES DAMASIO DOS SANTOS" },
+    { matricula: "352", nome: "LUCAS RODRIGUES SILVA ROSA" },
+    { matricula: "365", nome: "GIVANILDO SALLES DA SILVA" },
+    { matricula: "375", nome: "ALEXANDER CATANI BARONI" },
+    { matricula: "378", nome: "PAULO CESAR DE OLIVEIRA CASTRO" },
+    { matricula: "399", nome: "RODRIGO ALVES LOPES" },
+    { matricula: "400", nome: "FRANCISCO CESAR ANTONIO DA SIL" },
+  ]
+
+  const normalizeOperatorText = (value) => value.toUpperCase().replace(/\s+/g, " ").trim()
+  const normalizeOperatorDigits = (value) => value.replace(/\D/g, "")
+
+  const operatorLookup = (() => {
+    const map = new Map()
+    operatorCatalog.forEach((operator) => {
+      const matriculaSemZeros = operator.matricula.replace(/^0+/, "") || "0"
+      const label = `${operator.name} - ${operator.matricula}`
+      const keys = [
+        normalizeOperatorText(operator.name),
+        normalizeOperatorText(`${operator.name} ${operator.matricula}`),
+        normalizeOperatorText(`${operator.name} ${matriculaSemZeros}`),
+        normalizeOperatorDigits(operator.matricula),
+        normalizeOperatorDigits(matriculaSemZeros),
+      ]
+      keys.forEach((key) => {
+        if (key) {
+          map.set(key, { label, turno: operator.turno })
+        }
+      })
+    })
+    return map
+  })()
+
+  const operatorOptions = Array.from(
+    new Set(operatorCatalog.map((operator) => `${operator.name} - ${operator.matricula}`)),
+  )
+
+  const getOperatorMatch = (value) => {
+    const digitsKey = normalizeOperatorDigits(value)
+    if (digitsKey && operatorLookup.has(digitsKey)) {
+      return operatorLookup.get(digitsKey)
+    }
+    const textKey = normalizeOperatorText(value)
+    if (textKey && operatorLookup.has(textKey)) {
+      return operatorLookup.get(textKey)
+    }
+    return null
+  }
 
   // Função de debounce para evitar atualizações excessivas
   const debounce = (func, delay) => {
@@ -83,6 +159,72 @@ export default function Home() {
     )}/${hoje.getFullYear()}`
   }, [])
 
+  const formatDateBr = (date) => {
+    return `${String(date.getDate()).padStart(2, "0")}/${String(date.getMonth() + 1).padStart(
+      2,
+      "0",
+    )}/${date.getFullYear()}`
+  }
+
+  const formatTruckCode = (value) => {
+    const cleaned = value.toUpperCase().replace(/[^A-Z0-9]/g, "")
+    const prefix = cleaned.slice(0, 3)
+    const suffix = cleaned.slice(3, 7)
+    if (prefix && suffix) return `${prefix}-${suffix}`
+    return prefix || suffix
+  }
+
+  const getRegistroData = (turno, refugoAtrasado, dataRefugo) => {
+    if (turno === "Vespertino") {
+      if (refugoAtrasado && dataRefugo) {
+        return dataRefugo
+      }
+      return formatDateBr(new Date())
+    }
+    return dataAjustada()
+  }
+
+  const resetTelegramButton = (buttonId) => {
+    if (!buttonId) return
+    const button = document.getElementById(buttonId)
+    if (button) {
+      button.disabled = false
+      button.textContent = "🚀 Enviar para Telegram"
+      button.style.opacity = "1"
+      button.style.cursor = "pointer"
+      button.style.background = ""
+      button.classList.remove("sending")
+    }
+  }
+
+  const deleteLastTelegramMessage = async () => {
+    const { messageId, bot, chatId } = lastSentTelegramInfo
+    const resolvedBot = bot || document.getElementById("bot")?.value.trim()
+    const resolvedChatId = chatId || document.getElementById("chatId")?.value.trim()
+
+    if (!messageId || !resolvedBot || !resolvedChatId) return false
+
+    try {
+      const response = await fetch(`https://api.telegram.org/bot${resolvedBot}/deleteMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: resolvedChatId,
+          message_id: messageId,
+        }),
+      })
+      const data = await response.json()
+      if (!data.ok) {
+        throw new Error(data.description || "Erro desconhecido")
+      }
+      return true
+    } catch (error) {
+      console.error("Telegram delete error:", error)
+      showStatus("Erro ao apagar mensagem: " + error.message, "error")
+      return false
+    }
+  }
+
   // Função para atualizar todas as descrições de imagens com os novos dados manuais
   const updateAllImageDescriptions = (newData) => {
     if (currentProcessedPhotos.length === 0) return
@@ -97,6 +239,8 @@ export default function Home() {
       const index = dados.findIndex((item) => item.timestamp === timestamp)
       if (index !== -1) {
         // Atualizar dados no localStorage
+        const resolvedTurno = newData.turno || dados[index].turno
+        const resolvedData = getRegistroData(resolvedTurno, newData.refugoAtrasado, newData.dataRefugo)
         dados[index] = {
           ...dados[index],
           caminhao: newData.caminhao || dados[index].caminhao,
@@ -105,18 +249,24 @@ export default function Home() {
           concorrencia600ml: newData.concorrencia600ml || dados[index].concorrencia600ml,
           concorrencia330ml: newData.concorrencia330ml || dados[index].concorrencia330ml,
           caixaConcorrencia: newData.caixaConcorrencia || dados[index].caixaConcorrencia,
-          bicadaHnk: newData.bicadaHnk || dados[index].bicadaHnk,
-          turno: newData.turno || dados[index].turno,
+          turno: resolvedTurno,
           operador: newData.operador || dados[index].operador,
+          frete: typeof newData.frete === "boolean" ? newData.frete : dados[index].frete,
+          motorista: newData.motorista || dados[index].motorista,
+          data: resolvedData,
         }
 
         // Atualizar a interface do usuário
         const itemElement = document.getElementById(`item-${timestamp}`)
         if (itemElement) {
           // Gerar nova descrição
-          let novaDescricao = `🚛 CAMINHÃO: ${dados[index].caminhao}\n🕐 TURNO: ${dados[index].turno || "Não informado"}\n🍺 BICADA: ${dados[index].bicada}\n`
+          let novaDescricao = `🚛 CAMINHÃO: ${dados[index].caminhao}\n`
 
+          if (dados[index].motorista) novaDescricao += `🚚 MOTORISTA: ${dados[index].motorista}\n`
           if (dados[index].operador) novaDescricao += `👤 OPERADOR: ${dados[index].operador}\n`
+          novaDescricao += `🕐 TURNO: ${dados[index].turno || "Não informado"}\n`
+          if (dados[index].frete) novaDescricao += `🚚 FRETE: Sim\n`
+          novaDescricao += `🍺 BICADA: ${dados[index].bicada}\n`
 
           if (dados[index].concorrencia1L !== "0")
             novaDescricao += `🏪 CONCORRÊNCIA 1L: ${dados[index].concorrencia1L}\n`
@@ -127,7 +277,7 @@ export default function Home() {
           if (dados[index].caixaConcorrencia)
             novaDescricao += `📦 CAIXA CONCORRÊNCIA: ${dados[index].caixaConcorrencia}\n`
 
-          novaDescricao += `🔥 BICADA HNK: ${dados[index].bicadaHnk}\n📅 DATA: ${dados[index].data}`
+          novaDescricao += `📅 DATA: ${dados[index].data}`
 
           // Atualizar a descrição exibida
           const descricaoDiv = itemElement.querySelector('div[style*="background: rgba(26, 42, 108, 0.1)"]')
@@ -178,13 +328,14 @@ export default function Home() {
     let totalConcorrencia1L = 0
     let totalConcorrencia600ml = 0
     let totalConcorrencia330ml = 0
-    let totalBicadaHnk = 0
+    const totalsByMotorista = {}
 
     filteredData.forEach((item, index) => {
       relatorio += `${index + 1}. Data: ${item.data}\n`
       relatorio += `   Caminhão: ${item.caminhao}\n`
       relatorio += `   Turno: ${item.turno || "Não informado"}\n`
       relatorio += `   Operador: ${item.operador || "Não informado"}\n`
+      relatorio += `   Motorista: ${item.motorista || "Não informado"}\n`
       relatorio += `   Bicada: ${item.bicada}\n`
       relatorio += `   Concorrência 1L: ${item.concorrencia1L || "0"}\n`
       relatorio += `   Concorrência 600ml: ${item.concorrencia600ml || "0"}\n`
@@ -192,14 +343,16 @@ export default function Home() {
       if (item.caixaConcorrencia) {
         relatorio += `   Caixa Concorrência: ${item.caixaConcorrencia}\n`
       }
-      relatorio += `   Bicada HNK: ${item.bicadaHnk || "0"}\n`
       relatorio += `   ${"-".repeat(40)}\n`
 
       totalBicada += Number.parseInt(item.bicada) || 0
       totalConcorrencia1L += Number.parseInt(item.concorrencia1L) || 0
       totalConcorrencia600ml += Number.parseInt(item.concorrencia600ml) || 0
       totalConcorrencia330ml += Number.parseInt(item.concorrencia330ml) || 0
-      totalBicadaHnk += Number.parseInt(item.bicadaHnk) || 0
+
+      if (item.motorista) {
+        totalsByMotorista[item.motorista] = (totalsByMotorista[item.motorista] || 0) + 1
+      }
     })
 
     relatorio += `\nRESUMO:\n`
@@ -208,7 +361,14 @@ export default function Home() {
     relatorio += `🏪 Total Concorrência 1L: ${totalConcorrencia1L}\n`
     relatorio += `🏪 Total Concorrência 600ml: ${totalConcorrencia600ml}\n`
     relatorio += `🏪 Total Concorrência 330ml: ${totalConcorrencia330ml}\n`
-    relatorio += `🔥 Total Bicada HNK: ${totalBicadaHnk}\n`
+    if (Object.keys(totalsByMotorista).length > 0) {
+      relatorio += `\nTOTAL POR MOTORISTA:\n`
+      Object.entries(totalsByMotorista)
+        .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "pt-BR"))
+        .forEach(([motorista, total]) => {
+          relatorio += `- ${motorista}: ${total}\n`
+        })
+    }
     relatorio += `${"=".repeat(60)}\n`
 
     return relatorio
@@ -368,6 +528,11 @@ export default function Home() {
     setupDailyReport()
     setupConnectionMonitoring()
 
+    const termsAccepted = localStorage.getItem("termsAccepted")
+    if (termsAccepted !== "true") {
+      setShowTermsPopup(true)
+    }
+
     // Setup connection monitoring and retry mechanism
     function setupConnectionMonitoring() {
       // Check connection quality periodically
@@ -392,11 +557,14 @@ export default function Home() {
 
       try {
         const startTime = Date.now()
-        const response = await fetch("https://www.google.com/favicon.ico", {
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 5000)
+        const response = await fetch("/favicon.ico", {
           method: "HEAD",
           cache: "no-cache",
-          timeout: 5000,
+          signal: controller.signal,
         })
+        clearTimeout(timeoutId)
         const endTime = Date.now()
         const responseTime = endTime - startTime
 
@@ -767,6 +935,14 @@ export default function Home() {
               sendButton.style.background = "#28a745"
               sendButton.classList.remove("sending")
             }
+            const messageId = data.result?.message_id ?? null
+            setLastSentMessageId(messageId)
+            setLastSentTelegramInfo({
+              messageId,
+              buttonId,
+              bot,
+              chatId,
+            })
 
             // Mostrar diálogo de refugo após envio bem-sucedido
             setTimeout(() => {
@@ -914,10 +1090,11 @@ export default function Home() {
         const concorrencia600ml = manualData.concorrencia600ml || "0"
         const concorrencia330ml = manualData.concorrencia330ml || "0"
         const caixaConcorrencia = manualData.caixaConcorrencia || ""
-        const bicadaHnk = manualData.bicadaHnk || "0"
         const turno = manualData.turno || "Não informado"
         const operador = manualData.operador || ""
-        const data = dataAjustada() // dataAjustada agora está acessível
+        const frete = manualData.frete || false
+        const motorista = manualData.motorista || ""
+        const data = getRegistroData(turno, manualData.refugoAtrasado, manualData.dataRefugo)
         const timestamp = Date.now()
 
         // Save data to localStorage
@@ -929,17 +1106,22 @@ export default function Home() {
           concorrencia600ml,
           concorrencia330ml,
           caixaConcorrencia,
-          bicadaHnk,
           turno,
           operador,
+          frete,
+          motorista,
           timestamp,
         }
         salvarDados(dadosRegistro)
 
         // Gerar descrição para a legenda do Telegram
-        let descricao = `🚛 CAMINHÃO: ${caminhao}\n🕐 TURNO: ${turno}\n🍺 BICADA: ${bicada}\n`
+        let descricao = `🚛 CAMINHÃO: ${caminhao}\n`
 
+        if (motorista) descricao += `🚚 MOTORISTA: ${motorista}\n`
         if (operador) descricao += `👤 OPERADOR: ${operador}\n`
+        descricao += `🕐 TURNO: ${turno}\n`
+        if (frete) descricao += `🚚 FRETE: Sim\n`
+        descricao += `🍺 BICADA: ${bicada}\n`
 
         // Adicionar concorrência apenas se houver valores
         if (concorrencia1L !== "0") descricao += `🏪 CONCORRÊNCIA 1L: ${concorrencia1L}\n`
@@ -947,7 +1129,7 @@ export default function Home() {
         if (concorrencia330ml !== "0") descricao += `🏪 CONCORRÊNCIA 330ml: ${concorrencia330ml}\n`
         if (caixaConcorrencia) descricao += `📦 CAIXA CONCORRÊNCIA: ${caixaConcorrencia}\n`
 
-        descricao += `🔥 BICADA HNK: ${bicadaHnk}\n📅 DATA: ${data}`
+        descricao += `📅 DATA: ${data}`
 
         // Usar apenas a imagem original sem marca d'água
         const dataURL = canvas.toDataURL("image/jpeg", 0.9)
@@ -993,10 +1175,12 @@ export default function Home() {
             concorrencia600ml: item.concorrencia600ml || "",
             concorrencia330ml: item.concorrencia330ml || "",
             caixaConcorrencia: item.caixaConcorrencia || "",
-            bicadaHnk: item.bicadaHnk,
             caminhao: item.caminhao,
             turno: item.turno || "Matutino",
             operador: item.operador || "",
+            frete: item.frete || false,
+            motorista: item.motorista || "",
+            data: item.data || "",
           })
         }
       }
@@ -1010,9 +1194,13 @@ export default function Home() {
 
           if (itemElement) {
             // Gerar nova descrição
-            let novaDescricao = `🚛 CAMINHÃO: ${novosDados.caminhao}\n🕐 TURNO: ${novosDados.turno || "Não informado"}\n🍺 BICADA: ${novosDados.bicada}\n`
+            let novaDescricao = `🚛 CAMINHÃO: ${novosDados.caminhao}\n`
 
+            if (novosDados.motorista) novaDescricao += `🚚 MOTORISTA: ${novosDados.motorista}\n`
             if (novosDados.operador) novaDescricao += `👤 OPERADOR: ${novosDados.operador}\n`
+            novaDescricao += `🕐 TURNO: ${novosDados.turno || "Não informado"}\n`
+            if (novosDados.frete) novaDescricao += `🚚 FRETE: Sim\n`
+            novaDescricao += `🍺 BICADA: ${novosDados.bicada}\n`
 
             if (novosDados.concorrencia1L !== "0") novaDescricao += `🏪 CONCORRÊNCIA 1L: ${novosDados.concorrencia1L}\n`
             if (novosDados.concorrencia600ml !== "0")
@@ -1022,7 +1210,7 @@ export default function Home() {
             if (novosDados.caixaConcorrencia)
               novaDescricao += `📦 CAIXA CONCORRÊNCIA: ${novosDados.caixaConcorrencia}\n`
 
-            novaDescricao += `🔥 BICADA HNK: ${novosDados.bicadaHnk}\n📅 DATA: ${novosDados.data}`
+            novaDescricao += `📅 DATA: ${novosDados.data}`
 
             // Atualizar a descrição exibida
             const descricaoDiv = itemElement.querySelector('div[style*="background: rgba(26, 42, 108, 0.1)"]')
@@ -1050,6 +1238,12 @@ export default function Home() {
     }
   }, [dataAjustada, generateReportText, sendReportToTelegram]) // Adiciona dependências para useCallback
 
+  const handleAcceptTerms = () => {
+    if (!termsChecked) return
+    localStorage.setItem("termsAccepted", "true")
+    setShowTermsPopup(false)
+  }
+
   const formatDateForInput = (dateString) => {
     if (!dateString) return ""
     const [day, month, year] = dateString.split("/")
@@ -1076,15 +1270,17 @@ export default function Home() {
         concorrencia600ml: "",
         concorrencia330ml: "",
         caixaConcorrencia: "",
-        bicadaHnk: "",
         caminhao: "",
         turno: "Matutino",
         operador: "",
+        frete: false,
+        motorista: "",
+        data: "",
       })
     }
   }
 
-  const handleRefugoResponse = (resposta) => {
+  const handleRefugoResponse = async (resposta) => {
     setShowRefugoDialog(false)
 
     if (resposta === "sim") {
@@ -1102,9 +1298,12 @@ export default function Home() {
         concorrencia600ml: "0",
         concorrencia330ml: "0",
         caixaConcorrencia: "",
-        bicadaHnk: "0",
         turno: "Matutino",
         operador: "",
+        frete: false,
+        motorista: "",
+        refugoAtrasado: false,
+        dataRefugo: "",
       })
 
       // Resetar estado do caminhao personalizado
@@ -1112,12 +1311,22 @@ export default function Home() {
 
       // Resetar lista de fotos processadas
       setCurrentProcessedPhotos([])
+      setLastSentMessageId(null)
+      setLastSentTelegramInfo({ messageId: null, buttonId: null, bot: "", chatId: "" })
 
       showStatus("Refugo realizado! Sistema limpo para novo caminhao.", "success")
     } else if (resposta === "nao") {
       // Usuario quer corrigir - abrir a secao de dados manuais
       setShowManualInput(true)
-      showStatus("Voce pode corrigir as informacoes e enviar novamente.", "processing")
+      const deleted = await deleteLastTelegramMessage()
+      if (deleted) {
+        showStatus("Mensagem apagada. Corrija os dados e reenvie.", "success")
+        setLastSentMessageId(null)
+        setLastSentTelegramInfo({ messageId: null, buttonId: null, bot: "", chatId: "" })
+      } else {
+        showStatus("Voce pode corrigir as informacoes e enviar novamente.", "processing")
+      }
+      resetTelegramButton(lastSentTelegramInfo.buttonId)
     } else if (resposta === "continuar") {
       // Usuario quer continuar adicionando fotos
       showStatus("Continue adicionando fotos ao mesmo caminhao.", "processing")
@@ -1210,7 +1419,6 @@ export default function Home() {
             SISTEMA DE AVARIAS
           </a>
         </header>
-
         {/* Connection Status Bar */}
         <div
           style={{
@@ -1267,38 +1475,52 @@ export default function Home() {
           {showManualInput && (
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               <label>Caminhao:</label>
-              <select
-                value={showCustomTruck ? "OUTRO" : manualData.caminhao}
-                onChange={(e) => {
-                  const value = e.target.value
-                  if (value === "OUTRO") {
-                    setShowCustomTruck(true)
-                    const newData = { ...manualData, caminhao: "" }
-                    setManualData(newData)
-                  } else {
-                    setShowCustomTruck(false)
-                    const newData = { ...manualData, caminhao: value }
-                    setManualData(newData)
-                    debouncedUpdateDescriptions(newData)
-                  }
-                }}
-                style={{ padding: "10px", borderRadius: "8px", border: "1px solid #ccc" }}
-              >
-                <option value="">Selecione um caminhao</option>
-                <option value="RQR-4J50">RQR-4J50</option>
-                <option value="RQR-4J42">RQR-4J42</option>
-                <option value="RQS-0I92">RQS-0I92</option>
-                <option value="SFP-4J14">SFP-4J14</option>
-                <option value="SFP-4I75">SFP-4I75</option>
-                <option value="SFP-4J08">SFP-4J08</option>
-                <option value="RQR-4J76">RQR-4J76</option>
-                <option value="RQR-1D60">RQR-1D60</option>
-                <option value="SFP-4I95">SFP-4I95</option>
-                <option value="RQR-4J93">RQR-4J93</option>
-                <option value="QRD-0J81">QRD-0J81</option>
-                <option value="RQS-2F30">RQS-2F30</option>
-                <option value="OUTRO">Outro (digite abaixo)</option>
-              </select>
+              <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                <select
+                  value={showCustomTruck ? "OUTRO" : manualData.caminhao}
+                  onChange={(e) => {
+                    const value = e.target.value
+                    if (value === "OUTRO") {
+                      setShowCustomTruck(true)
+                      const newData = { ...manualData, caminhao: "" }
+                      setManualData(newData)
+                    } else {
+                      setShowCustomTruck(false)
+                      const newData = { ...manualData, caminhao: value }
+                      setManualData(newData)
+                      debouncedUpdateDescriptions(newData)
+                    }
+                  }}
+                  style={{ padding: "10px", borderRadius: "8px", border: "1px solid #ccc", flex: 1 }}
+                >
+                  <option value="">Selecione um caminhao</option>
+                  <option value="RQR-4J50">RQR-4J50</option>
+                  <option value="RQR-4J42">RQR-4J42</option>
+                  <option value="RQS-0I92">RQS-0I92</option>
+                  <option value="SFP-4J14">SFP-4J14</option>
+                  <option value="SFP-4I75">SFP-4I75</option>
+                  <option value="SFP-4J08">SFP-4J08</option>
+                  <option value="RQR-4J76">RQR-4J76</option>
+                  <option value="RQR-1D60">RQR-1D60</option>
+                  <option value="SFP-4I95">SFP-4I95</option>
+                  <option value="RQR-4J93">RQR-4J93</option>
+                  <option value="QRD-0J81">QRD-0J81</option>
+                  <option value="RQS-2F30">RQS-2F30</option>
+                  <option value="OUTRO">Outro (digite abaixo)</option>
+                </select>
+                <label style={{ display: "flex", alignItems: "center", gap: "6px", whiteSpace: "nowrap" }}>
+                  <input
+                    type="checkbox"
+                    checked={manualData.frete}
+                    onChange={(e) => {
+                      const newData = { ...manualData, frete: e.target.checked }
+                      setManualData(newData)
+                      debouncedUpdateDescriptions(newData)
+                    }}
+                  />
+                  Frete
+                </label>
+              </div>
 
               {showCustomTruck && (
                 <input
@@ -1306,13 +1528,80 @@ export default function Home() {
                   placeholder="Digite o codigo do caminhao (ex: ABC-1234)"
                   value={manualData.caminhao}
                   onChange={(e) => {
-                    const newData = { ...manualData, caminhao: e.target.value.toUpperCase() }
+                    const newData = { ...manualData, caminhao: formatTruckCode(e.target.value) }
                     setManualData(newData)
                     debouncedUpdateDescriptions(newData)
                   }}
                   style={{ padding: "10px", borderRadius: "8px", border: "1px solid #ccc" }}
                 />
               )}
+
+              <label>Motorista:</label>
+              <input
+                type="text"
+                list="motorista-options"
+                placeholder="Digite nome ou matrícula do motorista"
+                value={manualData.motorista}
+                onChange={(e) => {
+                  const newData = { ...manualData, motorista: e.target.value }
+                  setManualData(newData)
+                  debouncedUpdateDescriptions(newData)
+                }}
+                disabled={manualData.frete}
+                style={{ padding: "10px", borderRadius: "8px", border: "1px solid #ccc" }}
+              />
+
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "nowrap" }}>
+                <label style={{ display: "flex", alignItems: "center", gap: "8px", whiteSpace: "nowrap" }}>
+                  <input
+                    type="checkbox"
+                    checked={manualData.refugoAtrasado}
+                    onChange={(e) => {
+                      const newData = {
+                        ...manualData,
+                        refugoAtrasado: e.target.checked,
+                        dataRefugo: e.target.checked ? manualData.dataRefugo : "",
+                      }
+                      setManualData(newData)
+                      debouncedUpdateDescriptions(newData)
+                    }}
+                  />
+                  Data divergente?
+                </label>
+                <input
+                  type="date"
+                  value={formatDateForInput(manualData.dataRefugo)}
+                  onChange={(e) => {
+                    const newData = { ...manualData, dataRefugo: formatDateFromInput(e.target.value) }
+                    setManualData(newData)
+                    debouncedUpdateDescriptions(newData)
+                  }}
+                  disabled={!manualData.refugoAtrasado}
+                  style={{
+                    padding: "8px",
+                    borderRadius: "5px",
+                    border: "1px solid #ccc",
+                    opacity: manualData.refugoAtrasado ? "1" : "0.6",
+                  }}
+                />
+              </div>
+
+              <label>Operador:</label>
+              <input
+                type="text"
+                list="operator-options"
+                placeholder="Digite nome ou matrícula do operador"
+                value={manualData.operador}
+                onChange={(e) => {
+                  const match = getOperatorMatch(e.target.value)
+                  const newData = match
+                    ? { ...manualData, operador: match.label, turno: match.turno }
+                    : { ...manualData, operador: e.target.value }
+                  setManualData(newData)
+                  debouncedUpdateDescriptions(newData)
+                }}
+                style={{ padding: "10px", borderRadius: "8px", border: "1px solid #ccc" }}
+              />
 
               <label>Turno:</label>
               <select
@@ -1327,20 +1616,6 @@ export default function Home() {
                 <option value="Matutino">Matutino</option>
                 <option value="Vespertino">Vespertino</option>
               </select>
-
-              <label>Operador:</label>
-              <input
-                type="text"
-                list="operator-options"
-                placeholder="Digite nome ou matrícula do operador"
-                value={manualData.operador}
-                onChange={(e) => {
-                  const newData = { ...manualData, operador: e.target.value }
-                  setManualData(newData)
-                  debouncedUpdateDescriptions(newData)
-                }}
-                style={{ padding: "10px", borderRadius: "8px", border: "1px solid #ccc" }}
-              />
 
               <label>Bicada:</label>
               <input
@@ -1410,18 +1685,6 @@ export default function Home() {
                   debouncedUpdateDescriptions(newData)
                 }}
                 placeholder="Ex: Caixa com 24 unidades de 330ml"
-              />
-
-              <label>Bicada HNK:</label>
-              <input
-                type="number"
-                value={manualData.bicadaHnk}
-                onChange={(e) => {
-                  const newData = { ...manualData, bicadaHnk: e.target.value }
-                  setManualData(newData)
-                  debouncedUpdateDescriptions(newData)
-                }}
-                min="0"
               />
 
               <button
@@ -1790,39 +2053,50 @@ export default function Home() {
               <h3 style={{ marginBottom: "15px", color: "#1a2a6c" }}>✏️ Editar Informações</h3>
 
               <label>Caminhão:</label>
-              <select
-                value={editForm.caminhao}
-                onChange={(e) => {
-                  const value = e.target.value
-                  if (value === "OUTRO") {
-                    setEditForm({ ...editForm, caminhao: "" })
-                  } else {
-                    setEditForm({ ...editForm, caminhao: value })
-                  }
-                }}
-                style={{
-                  marginBottom: "10px",
-                  padding: "10px",
-                  borderRadius: "8px",
-                  border: "1px solid #ccc",
-                  width: "100%",
-                }}
-              >
-                <option value="">Selecione um caminhão</option>
-                <option value="RQR-4J50">RQR-4J50</option>
-                <option value="RQR-4J42">RQR-4J42</option>
-                <option value="RQS-0I92">RQS-0I92</option>
-                <option value="SFP-4J14">SFP-4J14</option>
-                <option value="SFP-4I75">SFP-4I75</option>
-                <option value="SFP-4J08">SFP-4J08</option>
-                <option value="RQR-4J76">RQR-4J76</option>
-                <option value="RQR-1D60">RQR-1D60</option>
-                <option value="SFP-4I95">SFP-4I95</option>
-                <option value="RQR-4J93">RQR-4J93</option>
-                <option value="QRD-0J81">QRD-0J81</option>
-                <option value="RQS-2F30">RQS-2F30</option> {/* Novo modelo de caminhão adicionado */}
-                <option value="OUTRO">Outro</option>
-              </select>
+              <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                <select
+                  value={editForm.caminhao}
+                  onChange={(e) => {
+                    const value = e.target.value
+                    if (value === "OUTRO") {
+                      setEditForm({ ...editForm, caminhao: "" })
+                    } else {
+                      setEditForm({ ...editForm, caminhao: value })
+                    }
+                  }}
+                  style={{
+                    marginBottom: "10px",
+                    padding: "10px",
+                    borderRadius: "8px",
+                    border: "1px solid #ccc",
+                    width: "100%",
+                    flex: 1,
+                  }}
+                >
+                  <option value="">Selecione um caminhão</option>
+                  <option value="RQR-4J50">RQR-4J50</option>
+                  <option value="RQR-4J42">RQR-4J42</option>
+                  <option value="RQS-0I92">RQS-0I92</option>
+                  <option value="SFP-4J14">SFP-4J14</option>
+                  <option value="SFP-4I75">SFP-4I75</option>
+                  <option value="SFP-4J08">SFP-4J08</option>
+                  <option value="RQR-4J76">RQR-4J76</option>
+                  <option value="RQR-1D60">RQR-1D60</option>
+                  <option value="SFP-4I95">SFP-4I95</option>
+                  <option value="RQR-4J93">RQR-4J93</option>
+                  <option value="QRD-0J81">QRD-0J81</option>
+                  <option value="RQS-2F30">RQS-2F30</option> {/* Novo modelo de caminhão adicionado */}
+                  <option value="OUTRO">Outro</option>
+                </select>
+                <label style={{ display: "flex", alignItems: "center", gap: "6px", whiteSpace: "nowrap" }}>
+                  <input
+                    type="checkbox"
+                    checked={editForm.frete}
+                    onChange={(e) => setEditForm({ ...editForm, frete: e.target.checked })}
+                  />
+                  Frete
+                </label>
+              </div>
 
               <label>Turno:</label>
               <select
@@ -1845,9 +2119,27 @@ export default function Home() {
                 type="text"
                 list="operator-options"
                 value={editForm.operador}
-                onChange={(e) => setEditForm({ ...editForm, operador: e.target.value })}
+                onChange={(e) => {
+                  const match = getOperatorMatch(e.target.value)
+                  if (match) {
+                    setEditForm({ ...editForm, operador: match.label, turno: match.turno })
+                  } else {
+                    setEditForm({ ...editForm, operador: e.target.value })
+                  }
+                }}
                 style={{ marginBottom: "10px" }}
                 placeholder="Digite nome ou matrícula do operador"
+              />
+
+              <label>Motorista:</label>
+              <input
+                type="text"
+                list="motorista-options"
+                value={editForm.motorista}
+                onChange={(e) => setEditForm({ ...editForm, motorista: e.target.value })}
+                disabled={editForm.frete}
+                style={{ marginBottom: "10px" }}
+                placeholder="Digite nome ou matrícula do motorista"
               />
 
               <label>Bicada:</label>
@@ -1901,14 +2193,6 @@ export default function Home() {
                 placeholder="Ex: Caixa com 24 unidades de 330ml"
               />
 
-              <label>Bicada HNK:</label>
-              <input
-                type="number"
-                value={editForm.bicadaHnk}
-                onChange={(e) => setEditForm({ ...editForm, bicadaHnk: e.target.value })}
-                style={{ marginBottom: "10px" }}
-              />
-
               <div style={{ display: "flex", gap: "10px" }}>
                 <button
                   onClick={handleEditSubmit}
@@ -1940,9 +2224,107 @@ export default function Home() {
             <option key={operador} value={operador} />
           ))}
         </datalist>
+        <datalist id="motorista-options">
+          {driverList.map((motorista) => (
+            <option key={`${motorista.matricula}-${motorista.nome}`} value={`${motorista.matricula} ${motorista.nome}`} />
+          ))}
+        </datalist>
 
+        <div style={{ marginTop: "20px", textAlign: "center", fontSize: "12px", color: "#555" }}>
+          Ao continuar, você concorda com os{" "}
+          <a href="/termos-de-uso.pdf" style={{ color: "#1a2a6c", fontWeight: "bold", textDecoration: "underline" }}>
+            Termos de Uso
+          </a>
+          .
+        </div>
         <div className="status" id="status"></div>
       </div>
+
+      {showTermsPopup && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            background: "rgba(0,0,0,0.65)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 2000,
+            padding: "20px",
+          }}
+        >
+          <div
+            style={{
+              background: "white",
+              padding: "24px",
+              borderRadius: "12px",
+              width: "100%",
+              maxWidth: "420px",
+              textAlign: "left",
+              boxShadow: "0 10px 30px rgba(0,0,0,0.3)",
+            }}
+          >
+            <h3 style={{ marginBottom: "10px", color: "#1a2a6c", fontSize: "18px" }}>Termos de Uso</h3>
+            <p style={{ marginBottom: "15px", fontSize: "14px", lineHeight: "1.5", color: "#333" }}>
+              Para continuar, confirme que você leu e aceita os termos de uso do sistema.
+            </p>
+            <div style={{ marginBottom: "15px" }}>
+              <a
+                href="/termos-de-uso.pdf"
+                style={{ color: "#1a2a6c", fontWeight: "bold", fontSize: "13px", textDecoration: "underline" }}
+              >
+                Ler Termos de Uso
+              </a>
+            </div>
+            <label style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "15px" }}>
+              <input
+                type="checkbox"
+                checked={termsChecked}
+                onChange={(e) => setTermsChecked(e.target.checked)}
+              />
+              Li e aceito os termos de uso.
+            </label>
+            <div style={{ display: "flex", gap: "10px" }}>
+              <button
+                onClick={() => {
+                  window.location.href = "https://www.google.com"
+                }}
+                style={{
+                  background: "#6c757d",
+                  color: "white",
+                  padding: "10px 16px",
+                  borderRadius: "8px",
+                  border: "none",
+                  fontWeight: "bold",
+                  width: "100%",
+                  cursor: "pointer",
+                }}
+              >
+                Recusar
+              </button>
+              <button
+                onClick={handleAcceptTerms}
+                disabled={!termsChecked}
+                style={{
+                  background: termsChecked ? "#1a2a6c" : "#9aa3bf",
+                  color: "white",
+                  padding: "10px 16px",
+                  borderRadius: "8px",
+                  border: "none",
+                  fontWeight: "bold",
+                  width: "100%",
+                  cursor: termsChecked ? "pointer" : "not-allowed",
+                }}
+              >
+                Aceitar e continuar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <style jsx global>{`
         @keyframes loading {
