@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 // File: C:\Users\user\Downloads\triagemfilial-main\host-html-file\app\page.tsx
+=======
+// File: C:\Users\user\Downloads\triagemfilial-main (1)\triagemfilial-main\app\page.tsx
+>>>>>>> 59b5059 (segundo)
 import * as entry from '../../../app/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

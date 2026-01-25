@@ -11,6 +11,10 @@ export default function Home() {
     bicada: "",
     concorrencia1L: "",
     concorrencia600ml: "",
+<<<<<<< HEAD
+=======
+    concorrencia600mlVerde: "",
+>>>>>>> 59b5059 (segundo)
     concorrencia330ml: "",
     caixaConcorrencia: "",
     caminhao: "",
@@ -28,6 +32,10 @@ export default function Home() {
     bicada: "0",
     concorrencia1L: "0",
     concorrencia600ml: "0",
+<<<<<<< HEAD
+=======
+    concorrencia600mlVerde: "0",
+>>>>>>> 59b5059 (segundo)
     concorrencia330ml: "0",
     caixaConcorrencia: "",
     turno: "Matutino",
@@ -61,6 +69,7 @@ export default function Home() {
     { name: "CARLOS HENRIQUE PROCOPIO PINTO", matricula: "000354", turno: "Matutino" },
   ]
   const driverList = [
+<<<<<<< HEAD
     { matricula: "173", nome: "EZIO MARIANO BRITES" },
     { matricula: "186", nome: "JONATHAN DE JESUS MOREIRA" },
     { matricula: "213", nome: "JULIANO TEIXEIRA VICTORIO" },
@@ -74,10 +83,45 @@ export default function Home() {
     { matricula: "378", nome: "PAULO CESAR DE OLIVEIRA CASTRO" },
     { matricula: "399", nome: "RODRIGO ALVES LOPES" },
     { matricula: "400", nome: "FRANCISCO CESAR ANTONIO DA SIL" },
+=======
+    { matricula: "600", nome: "VINICIUS RAMOS MEUS" },
+    { matricula: "601", nome: "RODRIGO ALVES" },
+    { matricula: "602", nome: "JONATHAN DE JESUS" },
+    { matricula: "603", nome: "LUCAS RODRIGUES DA SILVA" },
+    { matricula: "604", nome: "EZIO MARIANO" },
+    { matricula: "605", nome: "FRANCISCO CESAR ANTONIO" },
+    { matricula: "606", nome: "JULIANO TEIXEIRA" },
+    { matricula: "607", nome: "LUCAS GOMES" },
+    { matricula: "608", nome: "CASSIO COSME ARGOLLO" },
+    { matricula: "609", nome: "WILLIAM OLIVEIRA DE PAUL" },
+    { matricula: "610", nome: "GIVANILDO SALLES" },
+    { matricula: "611", nome: "ANTONIO MARCOS" },
+    { matricula: "612", nome: "EUDES DAMASIO DOS SANTOS" },
+    { matricula: "613", nome: "ALEXANDER CATANI BARONI" },
+    { matricula: "614", nome: "PAULO CESAR DE OLIVEIRA" },
+    { matricula: "615", nome: "LEANDRO PRADO" },
+    { matricula: "616", nome: "ADELSON PAULUCIO" },
+    { matricula: "617", nome: "NIVALDO" },
+    { matricula: "618", nome: "HUMBERTO DE AZEVEDO" },
+    { matricula: "619", nome: "GEILSON FRETE 2" },
+    { matricula: "620", nome: "GEILSON FRETE 1" },
+>>>>>>> 59b5059 (segundo)
   ]
 
   const normalizeOperatorText = (value) => value.toUpperCase().replace(/\s+/g, " ").trim()
   const normalizeOperatorDigits = (value) => value.replace(/\D/g, "")
+<<<<<<< HEAD
+=======
+  const extractCodigo = (value) => {
+    if (!value) return ""
+    const trimmed = value.trim()
+    const leading = trimmed.match(/^\d+/)
+    if (leading) return leading[0]
+    const groups = trimmed.match(/\d+/g)
+    if (groups && groups.length > 0) return groups[groups.length - 1]
+    return trimmed
+  }
+>>>>>>> 59b5059 (segundo)
 
   const operatorLookup = (() => {
     const map = new Map()
@@ -116,6 +160,10 @@ export default function Home() {
     return null
   }
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 59b5059 (segundo)
   // Função de debounce para evitar atualizações excessivas
   const debounce = (func, delay) => {
     let timeoutId
@@ -247,6 +295,10 @@ export default function Home() {
           bicada: newData.bicada || dados[index].bicada,
           concorrencia1L: newData.concorrencia1L || dados[index].concorrencia1L,
           concorrencia600ml: newData.concorrencia600ml || dados[index].concorrencia600ml,
+<<<<<<< HEAD
+=======
+          concorrencia600mlVerde: newData.concorrencia600mlVerde || dados[index].concorrencia600mlVerde,
+>>>>>>> 59b5059 (segundo)
           concorrencia330ml: newData.concorrencia330ml || dados[index].concorrencia330ml,
           caixaConcorrencia: newData.caixaConcorrencia || dados[index].caixaConcorrencia,
           turno: resolvedTurno,
@@ -262,8 +314,13 @@ export default function Home() {
           // Gerar nova descrição
           let novaDescricao = `🚛 CAMINHÃO: ${dados[index].caminhao}\n`
 
+<<<<<<< HEAD
           if (dados[index].motorista) novaDescricao += `🚚 MOTORISTA: ${dados[index].motorista}\n`
           if (dados[index].operador) novaDescricao += `👤 OPERADOR: ${dados[index].operador}\n`
+=======
+          if (dados[index].motorista) novaDescricao += `🚚 MOTORISTA: ${extractCodigo(dados[index].motorista)}\n`
+          if (dados[index].operador) novaDescricao += `👤 OPERADOR: ${extractCodigo(dados[index].operador)}\n`
+>>>>>>> 59b5059 (segundo)
           novaDescricao += `🕐 TURNO: ${dados[index].turno || "Não informado"}\n`
           if (dados[index].frete) novaDescricao += `🚚 FRETE: Sim\n`
           novaDescricao += `🍺 BICADA: ${dados[index].bicada}\n`
@@ -272,6 +329,11 @@ export default function Home() {
             novaDescricao += `🏪 CONCORRÊNCIA 1L: ${dados[index].concorrencia1L}\n`
           if (dados[index].concorrencia600ml !== "0")
             novaDescricao += `🏪 CONCORRÊNCIA 600ml: ${dados[index].concorrencia600ml}\n`
+<<<<<<< HEAD
+=======
+          if (dados[index].concorrencia600mlVerde !== "0")
+            novaDescricao += `🏪 CONCORRÊNCIA 600ml VERDE: ${dados[index].concorrencia600mlVerde}\n`
+>>>>>>> 59b5059 (segundo)
           if (dados[index].concorrencia330ml !== "0")
             novaDescricao += `🏪 CONCORRÊNCIA 330ml: ${dados[index].concorrencia330ml}\n`
           if (dados[index].caixaConcorrencia)
@@ -327,6 +389,10 @@ export default function Home() {
     let totalBicada = 0
     let totalConcorrencia1L = 0
     let totalConcorrencia600ml = 0
+<<<<<<< HEAD
+=======
+    let totalConcorrencia600mlVerde = 0
+>>>>>>> 59b5059 (segundo)
     let totalConcorrencia330ml = 0
     const totalsByMotorista = {}
 
@@ -339,6 +405,10 @@ export default function Home() {
       relatorio += `   Bicada: ${item.bicada}\n`
       relatorio += `   Concorrência 1L: ${item.concorrencia1L || "0"}\n`
       relatorio += `   Concorrência 600ml: ${item.concorrencia600ml || "0"}\n`
+<<<<<<< HEAD
+=======
+      relatorio += `   Concorrência 600ml VERDE: ${item.concorrencia600mlVerde || "0"}\n`
+>>>>>>> 59b5059 (segundo)
       relatorio += `   Concorrência 330ml: ${item.concorrencia330ml || "0"}\n`
       if (item.caixaConcorrencia) {
         relatorio += `   Caixa Concorrência: ${item.caixaConcorrencia}\n`
@@ -348,6 +418,10 @@ export default function Home() {
       totalBicada += Number.parseInt(item.bicada) || 0
       totalConcorrencia1L += Number.parseInt(item.concorrencia1L) || 0
       totalConcorrencia600ml += Number.parseInt(item.concorrencia600ml) || 0
+<<<<<<< HEAD
+=======
+      totalConcorrencia600mlVerde += Number.parseInt(item.concorrencia600mlVerde) || 0
+>>>>>>> 59b5059 (segundo)
       totalConcorrencia330ml += Number.parseInt(item.concorrencia330ml) || 0
 
       if (item.motorista) {
@@ -360,6 +434,10 @@ export default function Home() {
     relatorio += `🍺 Total Bicada: ${totalBicada}\n`
     relatorio += `🏪 Total Concorrência 1L: ${totalConcorrencia1L}\n`
     relatorio += `🏪 Total Concorrência 600ml: ${totalConcorrencia600ml}\n`
+<<<<<<< HEAD
+=======
+    relatorio += `🏪 Total Concorrência 600ml VERDE: ${totalConcorrencia600mlVerde}\n`
+>>>>>>> 59b5059 (segundo)
     relatorio += `🏪 Total Concorrência 330ml: ${totalConcorrencia330ml}\n`
     if (Object.keys(totalsByMotorista).length > 0) {
       relatorio += `\nTOTAL POR MOTORISTA:\n`
@@ -672,7 +750,14 @@ export default function Home() {
         })
 
         const data = await response.json()
+<<<<<<< HEAD
         return data.ok
+=======
+        if (!data.ok) {
+          return false
+        }
+        return true
+>>>>>>> 59b5059 (segundo)
       } catch (error) {
         console.error("Upload attempt failed:", error)
         return false
@@ -1088,6 +1173,10 @@ export default function Home() {
         const bicada = manualData.bicada || "0"
         const concorrencia1L = manualData.concorrencia1L || "0"
         const concorrencia600ml = manualData.concorrencia600ml || "0"
+<<<<<<< HEAD
+=======
+        const concorrencia600mlVerde = manualData.concorrencia600mlVerde || "0"
+>>>>>>> 59b5059 (segundo)
         const concorrencia330ml = manualData.concorrencia330ml || "0"
         const caixaConcorrencia = manualData.caixaConcorrencia || ""
         const turno = manualData.turno || "Não informado"
@@ -1104,6 +1193,10 @@ export default function Home() {
           bicada,
           concorrencia1L,
           concorrencia600ml,
+<<<<<<< HEAD
+=======
+          concorrencia600mlVerde,
+>>>>>>> 59b5059 (segundo)
           concorrencia330ml,
           caixaConcorrencia,
           turno,
@@ -1117,8 +1210,13 @@ export default function Home() {
         // Gerar descrição para a legenda do Telegram
         let descricao = `🚛 CAMINHÃO: ${caminhao}\n`
 
+<<<<<<< HEAD
         if (motorista) descricao += `🚚 MOTORISTA: ${motorista}\n`
         if (operador) descricao += `👤 OPERADOR: ${operador}\n`
+=======
+        if (motorista) descricao += `🚚 MOTORISTA: ${extractCodigo(motorista)}\n`
+        if (operador) descricao += `👤 OPERADOR: ${extractCodigo(operador)}\n`
+>>>>>>> 59b5059 (segundo)
         descricao += `🕐 TURNO: ${turno}\n`
         if (frete) descricao += `🚚 FRETE: Sim\n`
         descricao += `🍺 BICADA: ${bicada}\n`
@@ -1126,6 +1224,11 @@ export default function Home() {
         // Adicionar concorrência apenas se houver valores
         if (concorrencia1L !== "0") descricao += `🏪 CONCORRÊNCIA 1L: ${concorrencia1L}\n`
         if (concorrencia600ml !== "0") descricao += `🏪 CONCORRÊNCIA 600ml: ${concorrencia600ml}\n`
+<<<<<<< HEAD
+=======
+        if (concorrencia600mlVerde !== "0")
+          descricao += `🏪 CONCORRÊNCIA 600ml VERDE: ${concorrencia600mlVerde}\n`
+>>>>>>> 59b5059 (segundo)
         if (concorrencia330ml !== "0") descricao += `🏪 CONCORRÊNCIA 330ml: ${concorrencia330ml}\n`
         if (caixaConcorrencia) descricao += `📦 CAIXA CONCORRÊNCIA: ${caixaConcorrencia}\n`
 
@@ -1173,6 +1276,10 @@ export default function Home() {
             bicada: item.bicada,
             concorrencia1L: item.concorrencia1L || "",
             concorrencia600ml: item.concorrencia600ml || "",
+<<<<<<< HEAD
+=======
+            concorrencia600mlVerde: item.concorrencia600mlVerde || "",
+>>>>>>> 59b5059 (segundo)
             concorrencia330ml: item.concorrencia330ml || "",
             caixaConcorrencia: item.caixaConcorrencia || "",
             caminhao: item.caminhao,
@@ -1196,8 +1303,13 @@ export default function Home() {
             // Gerar nova descrição
             let novaDescricao = `🚛 CAMINHÃO: ${novosDados.caminhao}\n`
 
+<<<<<<< HEAD
             if (novosDados.motorista) novaDescricao += `🚚 MOTORISTA: ${novosDados.motorista}\n`
             if (novosDados.operador) novaDescricao += `👤 OPERADOR: ${novosDados.operador}\n`
+=======
+            if (novosDados.motorista) novaDescricao += `🚚 MOTORISTA: ${extractCodigo(novosDados.motorista)}\n`
+            if (novosDados.operador) novaDescricao += `👤 OPERADOR: ${extractCodigo(novosDados.operador)}\n`
+>>>>>>> 59b5059 (segundo)
             novaDescricao += `🕐 TURNO: ${novosDados.turno || "Não informado"}\n`
             if (novosDados.frete) novaDescricao += `🚚 FRETE: Sim\n`
             novaDescricao += `🍺 BICADA: ${novosDados.bicada}\n`
@@ -1205,6 +1317,11 @@ export default function Home() {
             if (novosDados.concorrencia1L !== "0") novaDescricao += `🏪 CONCORRÊNCIA 1L: ${novosDados.concorrencia1L}\n`
             if (novosDados.concorrencia600ml !== "0")
               novaDescricao += `🏪 CONCORRÊNCIA 600ml: ${novosDados.concorrencia600ml}\n`
+<<<<<<< HEAD
+=======
+            if (novosDados.concorrencia600mlVerde !== "0")
+              novaDescricao += `🏪 CONCORRÊNCIA 600ml VERDE: ${novosDados.concorrencia600mlVerde}\n`
+>>>>>>> 59b5059 (segundo)
             if (novosDados.concorrencia330ml !== "0")
               novaDescricao += `🏪 CONCORRÊNCIA 330ml: ${novosDados.concorrencia330ml}\n`
             if (novosDados.caixaConcorrencia)
@@ -1268,6 +1385,10 @@ export default function Home() {
         bicada: "",
         concorrencia1L: "",
         concorrencia600ml: "",
+<<<<<<< HEAD
+=======
+        concorrencia600mlVerde: "",
+>>>>>>> 59b5059 (segundo)
         concorrencia330ml: "",
         caixaConcorrencia: "",
         caminhao: "",
@@ -1296,6 +1417,10 @@ export default function Home() {
         bicada: "0",
         concorrencia1L: "0",
         concorrencia600ml: "0",
+<<<<<<< HEAD
+=======
+        concorrencia600mlVerde: "0",
+>>>>>>> 59b5059 (segundo)
         concorrencia330ml: "0",
         caixaConcorrencia: "",
         turno: "Matutino",
@@ -1494,6 +1619,7 @@ export default function Home() {
                   style={{ padding: "10px", borderRadius: "8px", border: "1px solid #ccc", flex: 1 }}
                 >
                   <option value="">Selecione um caminhao</option>
+<<<<<<< HEAD
                   <option value="RQR-4J50">RQR-4J50</option>
                   <option value="RQR-4J42">RQR-4J42</option>
                   <option value="RQS-0I92">RQS-0I92</option>
@@ -1506,6 +1632,35 @@ export default function Home() {
                   <option value="RQR-4J93">RQR-4J93</option>
                   <option value="QRD-0J81">QRD-0J81</option>
                   <option value="RQS-2F30">RQS-2F30</option>
+=======
+                  <option value="JCC-9B11">JCC-9B11</option>
+                  <option value="JCC-9B16">JCC-9B16</option>
+                  <option value="JCC-9B23">JCC-9B23</option>
+                  <option value="JCC-9B31">JCC-9B31</option>
+                  <option value="KNZ-7A70">KNZ-7A70</option>
+                  <option value="KZF-7077">KZF-7077</option>
+                  <option value="MRE-5J12">MRE-5J12</option>
+                  <option value="MPG-6H02">MPG-6H02</option>
+                  <option value="MPW-1316">MPW-1316</option>
+                  <option value="MPZ-3857">MPZ-3857</option>
+                  <option value="ODA-0491">ODA-0491</option>
+                  <option value="ODK-4516">ODK-4516</option>
+                  <option value="QRD-0981">QRD-0981</option>
+                  <option value="QRE-0J01">QRE-0J01</option>
+                  <option value="QRK-6C87">QRK-6C87</option>
+                  <option value="RQO-2I91">RQO-2I91</option>
+                  <option value="RQO-2J14">RQO-2J14</option>
+                  <option value="RQO-2J17">RQO-2J17</option>
+                  <option value="RQQ-3I52">RQQ-3I52</option>
+                  <option value="RQR-1D60">RQR-1D60</option>
+                  <option value="RQR-4J42">RQR-4J42</option>
+                  <option value="RQR-4J76">RQR-4J76</option>
+                  <option value="RQR-4J93">RQR-4J93</option>
+                  <option value="RQS-0I92">RQS-0I92</option>
+                  <option value="RQS-2F30">RQS-2F30</option>
+                  <option value="SFP-4I95">SFP-4I95</option>
+                  <option value="SJE-2I48">SJE-2I48</option>
+>>>>>>> 59b5059 (segundo)
                   <option value="OUTRO">Outro (digite abaixo)</option>
                 </select>
                 <label style={{ display: "flex", alignItems: "center", gap: "6px", whiteSpace: "nowrap" }}>
@@ -1630,7 +1785,11 @@ export default function Home() {
               />
 
               <label>Concorrência por Tipo:</label>
+<<<<<<< HEAD
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px" }}>
+=======
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+>>>>>>> 59b5059 (segundo)
                 <div>
                   <label style={{ fontSize: "12px", marginBottom: "5px" }}>1L:</label>
                   <input
@@ -1660,6 +1819,23 @@ export default function Home() {
                   />
                 </div>
                 <div>
+<<<<<<< HEAD
+=======
+                  <label style={{ fontSize: "12px", marginBottom: "5px" }}>600ml verde:</label>
+                  <input
+                    type="number"
+                    value={manualData.concorrencia600mlVerde}
+                    onChange={(e) => {
+                      const newData = { ...manualData, concorrencia600mlVerde: e.target.value }
+                      setManualData(newData)
+                      debouncedUpdateDescriptions(newData)
+                    }}
+                    min="0"
+                    placeholder="0"
+                  />
+                </div>
+                <div>
+>>>>>>> 59b5059 (segundo)
                   <label style={{ fontSize: "12px", marginBottom: "5px" }}>330ml:</label>
                   <input
                     type="number"
@@ -2074,6 +2250,7 @@ export default function Home() {
                   }}
                 >
                   <option value="">Selecione um caminhão</option>
+<<<<<<< HEAD
                   <option value="RQR-4J50">RQR-4J50</option>
                   <option value="RQR-4J42">RQR-4J42</option>
                   <option value="RQS-0I92">RQS-0I92</option>
@@ -2086,6 +2263,35 @@ export default function Home() {
                   <option value="RQR-4J93">RQR-4J93</option>
                   <option value="QRD-0J81">QRD-0J81</option>
                   <option value="RQS-2F30">RQS-2F30</option> {/* Novo modelo de caminhão adicionado */}
+=======
+                  <option value="JCC-9B11">JCC-9B11</option>
+                  <option value="JCC-9B16">JCC-9B16</option>
+                  <option value="JCC-9B23">JCC-9B23</option>
+                  <option value="JCC-9B31">JCC-9B31</option>
+                  <option value="KNZ-7A70">KNZ-7A70</option>
+                  <option value="KZF-7077">KZF-7077</option>
+                  <option value="MRE-5J12">MRE-5J12</option>
+                  <option value="MPG-6H02">MPG-6H02</option>
+                  <option value="MPW-1316">MPW-1316</option>
+                  <option value="MPZ-3857">MPZ-3857</option>
+                  <option value="ODA-0491">ODA-0491</option>
+                  <option value="ODK-4516">ODK-4516</option>
+                  <option value="QRD-0981">QRD-0981</option>
+                  <option value="QRE-0J01">QRE-0J01</option>
+                  <option value="QRK-6C87">QRK-6C87</option>
+                  <option value="RQO-2I91">RQO-2I91</option>
+                  <option value="RQO-2J14">RQO-2J14</option>
+                  <option value="RQO-2J17">RQO-2J17</option>
+                  <option value="RQQ-3I52">RQQ-3I52</option>
+                  <option value="RQR-1D60">RQR-1D60</option>
+                  <option value="RQR-4J42">RQR-4J42</option>
+                  <option value="RQR-4J76">RQR-4J76</option>
+                  <option value="RQR-4J93">RQR-4J93</option>
+                  <option value="RQS-0I92">RQS-0I92</option>
+                  <option value="RQS-2F30">RQS-2F30</option>
+                  <option value="SFP-4I95">SFP-4I95</option>
+                  <option value="SJE-2I48">SJE-2I48</option>
+>>>>>>> 59b5059 (segundo)
                   <option value="OUTRO">Outro</option>
                 </select>
                 <label style={{ display: "flex", alignItems: "center", gap: "6px", whiteSpace: "nowrap" }}>
@@ -2151,7 +2357,11 @@ export default function Home() {
               />
 
               <label>Concorrência por Tipo:</label>
+<<<<<<< HEAD
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "5px", marginBottom: "10px" }}>
+=======
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "5px", marginBottom: "10px" }}>
+>>>>>>> 59b5059 (segundo)
                 <div>
                   <label style={{ fontSize: "12px" }}>1L:</label>
                   <input
@@ -2173,6 +2383,19 @@ export default function Home() {
                   />
                 </div>
                 <div>
+<<<<<<< HEAD
+=======
+                  <label style={{ fontSize: "12px" }}>600ml verde:</label>
+                  <input
+                    type="number"
+                    value={editForm.concorrencia600mlVerde}
+                    onChange={(e) => setEditForm({ ...editForm, concorrencia600mlVerde: e.target.value })}
+                    min="0"
+                    placeholder="0"
+                  />
+                </div>
+                <div>
+>>>>>>> 59b5059 (segundo)
                   <label style={{ fontSize: "12px" }}>330ml:</label>
                   <input
                     type="number"
@@ -2226,7 +2449,14 @@ export default function Home() {
         </datalist>
         <datalist id="motorista-options">
           {driverList.map((motorista) => (
+<<<<<<< HEAD
             <option key={`${motorista.matricula}-${motorista.nome}`} value={`${motorista.matricula} ${motorista.nome}`} />
+=======
+            <option
+              key={`${motorista.matricula}-${motorista.nome}`}
+              value={`${motorista.matricula} - ${motorista.nome}`}
+            />
+>>>>>>> 59b5059 (segundo)
           ))}
         </datalist>
 
