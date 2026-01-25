@@ -1,9 +1,4 @@
-<<<<<<< HEAD
 node_modules
 dist
 .env
-=======
-node_modules
-dist
-.env
->>>>>>> 59b5059 (segundo)
+.next
