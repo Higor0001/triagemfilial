@@ -11,6 +11,7 @@ export default function Home() {
     bicada: "",
     concorrencia1L: "",
     concorrencia600ml: "",
+    concorrencia600mlVerde: "",
     concorrencia330ml: "",
     caixaConcorrencia: "",
     caminhao: "",
@@ -28,6 +29,7 @@ export default function Home() {
     bicada: "0",
     concorrencia1L: "0",
     concorrencia600ml: "0",
+    concorrencia600mlVerde: "0",
     concorrencia330ml: "0",
     caixaConcorrencia: "",
     turno: "Matutino",
@@ -61,23 +63,40 @@ export default function Home() {
     { name: "CARLOS HENRIQUE PROCOPIO PINTO", matricula: "000354", turno: "Matutino" },
   ]
   const driverList = [
-    { matricula: "173", nome: "EZIO MARIANO BRITES" },
-    { matricula: "186", nome: "JONATHAN DE JESUS MOREIRA" },
-    { matricula: "213", nome: "JULIANO TEIXEIRA VICTORIO" },
-    { matricula: "219", nome: "LUCAS GOMES DA SILVA" },
-    { matricula: "262", nome: "VINICIUS RAMOS MEUS" },
-    { matricula: "317", nome: "ANTONIO MARCOS MOREIRA RAMOS" },
-    { matricula: "316", nome: "EUDES DAMASIO DOS SANTOS" },
-    { matricula: "352", nome: "LUCAS RODRIGUES SILVA ROSA" },
-    { matricula: "365", nome: "GIVANILDO SALLES DA SILVA" },
-    { matricula: "375", nome: "ALEXANDER CATANI BARONI" },
-    { matricula: "378", nome: "PAULO CESAR DE OLIVEIRA CASTRO" },
-    { matricula: "399", nome: "RODRIGO ALVES LOPES" },
-    { matricula: "400", nome: "FRANCISCO CESAR ANTONIO DA SIL" },
+    { matricula: "600", nome: "VINICIUS RAMOS MEUS" },
+    { matricula: "601", nome: "RODRIGO ALVES" },
+    { matricula: "602", nome: "JONATHAN DE JESUS" },
+    { matricula: "603", nome: "LUCAS RODRIGUES DA SILVA" },
+    { matricula: "604", nome: "EZIO MARIANO" },
+    { matricula: "605", nome: "FRANCISCO CESAR ANTONIO" },
+    { matricula: "606", nome: "JULIANO TEIXEIRA" },
+    { matricula: "607", nome: "LUCAS GOMES" },
+    { matricula: "608", nome: "CASSIO COSME ARGOLLO" },
+    { matricula: "609", nome: "WILLIAM OLIVEIRA DE PAUL" },
+    { matricula: "610", nome: "GIVANILDO SALLES" },
+    { matricula: "611", nome: "ANTONIO MARCOS" },
+    { matricula: "612", nome: "EUDES DAMASIO DOS SANTOS" },
+    { matricula: "613", nome: "ALEXANDER CATANI BARONI" },
+    { matricula: "614", nome: "PAULO CESAR DE OLIVEIRA" },
+    { matricula: "615", nome: "LEANDRO PRADO" },
+    { matricula: "616", nome: "ADELSON PAULUCIO" },
+    { matricula: "617", nome: "NIVALDO" },
+    { matricula: "618", nome: "HUMBERTO DE AZEVEDO" },
+    { matricula: "619", nome: "GEILSON FRETE 2" },
+    { matricula: "620", nome: "GEILSON FRETE 1" },
   ]
 
   const normalizeOperatorText = (value) => value.toUpperCase().replace(/\s+/g, " ").trim()
   const normalizeOperatorDigits = (value) => value.replace(/\D/g, "")
+  const extractCodigo = (value) => {
+    if (!value) return ""
+    const trimmed = value.trim()
+    const leading = trimmed.match(/^\d+/)
+    if (leading) return leading[0]
+    const groups = trimmed.match(/\d+/g)
+    if (groups && groups.length > 0) return groups[groups.length - 1]
+    return trimmed
+  }
 
   const operatorLookup = (() => {
     const map = new Map()
@@ -247,6 +266,7 @@ export default function Home() {
           bicada: newData.bicada || dados[index].bicada,
           concorrencia1L: newData.concorrencia1L || dados[index].concorrencia1L,
           concorrencia600ml: newData.concorrencia600ml || dados[index].concorrencia600ml,
+          concorrencia600mlVerde: newData.concorrencia600mlVerde || dados[index].concorrencia600mlVerde,
           concorrencia330ml: newData.concorrencia330ml || dados[index].concorrencia330ml,
           caixaConcorrencia: newData.caixaConcorrencia || dados[index].caixaConcorrencia,
           turno: resolvedTurno,
@@ -262,8 +282,10 @@ export default function Home() {
           // Gerar nova descrição
           let novaDescricao = `🚛 CAMINHÃO: ${dados[index].caminhao}\n`
 
-          if (dados[index].motorista) novaDescricao += `🚚 MOTORISTA: ${dados[index].motorista}\n`
-          if (dados[index].operador) novaDescricao += `👤 OPERADOR: ${dados[index].operador}\n`
+          if (dados[index].motorista)
+            novaDescricao += `🚚 MOTORISTA: ${extractCodigo(dados[index].motorista) || dados[index].motorista}\n`
+          if (dados[index].operador)
+            novaDescricao += `👤 OPERADOR: ${extractCodigo(dados[index].operador) || dados[index].operador}\n`
           novaDescricao += `🕐 TURNO: ${dados[index].turno || "Não informado"}\n`
           if (dados[index].frete) novaDescricao += `🚚 FRETE: Sim\n`
           novaDescricao += `🍺 BICADA: ${dados[index].bicada}\n`
@@ -272,6 +294,8 @@ export default function Home() {
             novaDescricao += `🏪 CONCORRÊNCIA 1L: ${dados[index].concorrencia1L}\n`
           if (dados[index].concorrencia600ml !== "0")
             novaDescricao += `🏪 CONCORRÊNCIA 600ml: ${dados[index].concorrencia600ml}\n`
+          if (dados[index].concorrencia600mlVerde !== "0")
+            novaDescricao += `🏪 CONCORRÊNCIA 600ml VERDE: ${dados[index].concorrencia600mlVerde}\n`
           if (dados[index].concorrencia330ml !== "0")
             novaDescricao += `🏪 CONCORRÊNCIA 330ml: ${dados[index].concorrencia330ml}\n`
           if (dados[index].caixaConcorrencia)
@@ -327,18 +351,22 @@ export default function Home() {
     let totalBicada = 0
     let totalConcorrencia1L = 0
     let totalConcorrencia600ml = 0
+    let totalConcorrencia600mlVerde = 0
     let totalConcorrencia330ml = 0
     const totalsByMotorista = {}
 
     filteredData.forEach((item, index) => {
+      const motoristaCodigo = extractCodigo(item.motorista || "")
+      const motoristaLabel = motoristaCodigo || item.motorista || "Não informado"
       relatorio += `${index + 1}. Data: ${item.data}\n`
       relatorio += `   Caminhão: ${item.caminhao}\n`
       relatorio += `   Turno: ${item.turno || "Não informado"}\n`
       relatorio += `   Operador: ${item.operador || "Não informado"}\n`
-      relatorio += `   Motorista: ${item.motorista || "Não informado"}\n`
+      relatorio += `   Motorista: ${motoristaLabel}\n`
       relatorio += `   Bicada: ${item.bicada}\n`
       relatorio += `   Concorrência 1L: ${item.concorrencia1L || "0"}\n`
       relatorio += `   Concorrência 600ml: ${item.concorrencia600ml || "0"}\n`
+      relatorio += `   Concorrência 600ml VERDE: ${item.concorrencia600mlVerde || "0"}\n`
       relatorio += `   Concorrência 330ml: ${item.concorrencia330ml || "0"}\n`
       if (item.caixaConcorrencia) {
         relatorio += `   Caixa Concorrência: ${item.caixaConcorrencia}\n`
@@ -348,10 +376,11 @@ export default function Home() {
       totalBicada += Number.parseInt(item.bicada) || 0
       totalConcorrencia1L += Number.parseInt(item.concorrencia1L) || 0
       totalConcorrencia600ml += Number.parseInt(item.concorrencia600ml) || 0
+      totalConcorrencia600mlVerde += Number.parseInt(item.concorrencia600mlVerde) || 0
       totalConcorrencia330ml += Number.parseInt(item.concorrencia330ml) || 0
 
-      if (item.motorista) {
-        totalsByMotorista[item.motorista] = (totalsByMotorista[item.motorista] || 0) + 1
+      if (motoristaLabel && motoristaLabel !== "Não informado") {
+        totalsByMotorista[motoristaLabel] = (totalsByMotorista[motoristaLabel] || 0) + 1
       }
     })
 
@@ -360,6 +389,7 @@ export default function Home() {
     relatorio += `🍺 Total Bicada: ${totalBicada}\n`
     relatorio += `🏪 Total Concorrência 1L: ${totalConcorrencia1L}\n`
     relatorio += `🏪 Total Concorrência 600ml: ${totalConcorrencia600ml}\n`
+    relatorio += `🏪 Total Concorrência 600ml VERDE: ${totalConcorrencia600mlVerde}\n`
     relatorio += `🏪 Total Concorrência 330ml: ${totalConcorrencia330ml}\n`
     if (Object.keys(totalsByMotorista).length > 0) {
       relatorio += `\nTOTAL POR MOTORISTA:\n`
@@ -1088,6 +1118,7 @@ export default function Home() {
         const bicada = manualData.bicada || "0"
         const concorrencia1L = manualData.concorrencia1L || "0"
         const concorrencia600ml = manualData.concorrencia600ml || "0"
+        const concorrencia600mlVerde = manualData.concorrencia600mlVerde || "0"
         const concorrencia330ml = manualData.concorrencia330ml || "0"
         const caixaConcorrencia = manualData.caixaConcorrencia || ""
         const turno = manualData.turno || "Não informado"
@@ -1104,6 +1135,7 @@ export default function Home() {
           bicada,
           concorrencia1L,
           concorrencia600ml,
+          concorrencia600mlVerde,
           concorrencia330ml,
           caixaConcorrencia,
           turno,
@@ -1117,8 +1149,8 @@ export default function Home() {
         // Gerar descrição para a legenda do Telegram
         let descricao = `🚛 CAMINHÃO: ${caminhao}\n`
 
-        if (motorista) descricao += `🚚 MOTORISTA: ${motorista}\n`
-        if (operador) descricao += `👤 OPERADOR: ${operador}\n`
+        if (motorista) descricao += `🚚 MOTORISTA: ${extractCodigo(motorista) || motorista}\n`
+        if (operador) descricao += `👤 OPERADOR: ${extractCodigo(operador) || operador}\n`
         descricao += `🕐 TURNO: ${turno}\n`
         if (frete) descricao += `🚚 FRETE: Sim\n`
         descricao += `🍺 BICADA: ${bicada}\n`
@@ -1126,6 +1158,8 @@ export default function Home() {
         // Adicionar concorrência apenas se houver valores
         if (concorrencia1L !== "0") descricao += `🏪 CONCORRÊNCIA 1L: ${concorrencia1L}\n`
         if (concorrencia600ml !== "0") descricao += `🏪 CONCORRÊNCIA 600ml: ${concorrencia600ml}\n`
+        if (concorrencia600mlVerde !== "0")
+          descricao += `🏪 CONCORRÊNCIA 600ml VERDE: ${concorrencia600mlVerde}\n`
         if (concorrencia330ml !== "0") descricao += `🏪 CONCORRÊNCIA 330ml: ${concorrencia330ml}\n`
         if (caixaConcorrencia) descricao += `📦 CAIXA CONCORRÊNCIA: ${caixaConcorrencia}\n`
 
@@ -1173,6 +1207,7 @@ export default function Home() {
             bicada: item.bicada,
             concorrencia1L: item.concorrencia1L || "",
             concorrencia600ml: item.concorrencia600ml || "",
+            concorrencia600mlVerde: item.concorrencia600mlVerde || "",
             concorrencia330ml: item.concorrencia330ml || "",
             caixaConcorrencia: item.caixaConcorrencia || "",
             caminhao: item.caminhao,
@@ -1196,8 +1231,10 @@ export default function Home() {
             // Gerar nova descrição
             let novaDescricao = `🚛 CAMINHÃO: ${novosDados.caminhao}\n`
 
-            if (novosDados.motorista) novaDescricao += `🚚 MOTORISTA: ${novosDados.motorista}\n`
-            if (novosDados.operador) novaDescricao += `👤 OPERADOR: ${novosDados.operador}\n`
+            if (novosDados.motorista)
+              novaDescricao += `🚚 MOTORISTA: ${extractCodigo(novosDados.motorista) || novosDados.motorista}\n`
+            if (novosDados.operador)
+              novaDescricao += `👤 OPERADOR: ${extractCodigo(novosDados.operador) || novosDados.operador}\n`
             novaDescricao += `🕐 TURNO: ${novosDados.turno || "Não informado"}\n`
             if (novosDados.frete) novaDescricao += `🚚 FRETE: Sim\n`
             novaDescricao += `🍺 BICADA: ${novosDados.bicada}\n`
@@ -1205,6 +1242,8 @@ export default function Home() {
             if (novosDados.concorrencia1L !== "0") novaDescricao += `🏪 CONCORRÊNCIA 1L: ${novosDados.concorrencia1L}\n`
             if (novosDados.concorrencia600ml !== "0")
               novaDescricao += `🏪 CONCORRÊNCIA 600ml: ${novosDados.concorrencia600ml}\n`
+            if (novosDados.concorrencia600mlVerde !== "0")
+              novaDescricao += `🏪 CONCORRÊNCIA 600ml VERDE: ${novosDados.concorrencia600mlVerde}\n`
             if (novosDados.concorrencia330ml !== "0")
               novaDescricao += `🏪 CONCORRÊNCIA 330ml: ${novosDados.concorrencia330ml}\n`
             if (novosDados.caixaConcorrencia)
@@ -1268,6 +1307,7 @@ export default function Home() {
         bicada: "",
         concorrencia1L: "",
         concorrencia600ml: "",
+        concorrencia600mlVerde: "",
         concorrencia330ml: "",
         caixaConcorrencia: "",
         caminhao: "",
@@ -1296,6 +1336,7 @@ export default function Home() {
         bicada: "0",
         concorrencia1L: "0",
         concorrencia600ml: "0",
+        concorrencia600mlVerde: "0",
         concorrencia330ml: "0",
         caixaConcorrencia: "",
         turno: "Matutino",
@@ -1494,18 +1535,181 @@ export default function Home() {
                   style={{ padding: "10px", borderRadius: "8px", border: "1px solid #ccc", flex: 1 }}
                 >
                   <option value="">Selecione um caminhao</option>
-                  <option value="RQR-4J50">RQR-4J50</option>
-                  <option value="RQR-4J42">RQR-4J42</option>
+                  <option value="GTJ-8E12">GTJ-8E12</option>
                   <option value="RQS-0I92">RQS-0I92</option>
-                  <option value="SFP-4J14">SFP-4J14</option>
-                  <option value="SFP-4I75">SFP-4I75</option>
-                  <option value="SFP-4J08">SFP-4J08</option>
-                  <option value="RQR-4J76">RQR-4J76</option>
-                  <option value="RQR-1D60">RQR-1D60</option>
-                  <option value="SFP-4I95">SFP-4I95</option>
-                  <option value="RQR-4J93">RQR-4J93</option>
-                  <option value="QRD-0J81">QRD-0J81</option>
+                  <option value="RQS-0E69">RQS-0E69</option>
+                  <option value="KNM-3325">KNM-3325</option>
+                  <option value="RQS-0J63">RQS-0J63</option>
+                  <option value="MRH-8192">MRH-8192</option>
+                  <option value="MRI-1083">MRI-1083</option>
+                  <option value="MRH-8669">MRH-8669</option>
+                  <option value="MQC-9961">MQC-9961</option>
+                  <option value="MQO-9513">MQO-9513</option>
+                  <option value="MQY-8756">MQY-8756</option>
+                  <option value="MRH-8196">MRH-8196</option>
+                  <option value="MRH-8069">MRH-8069</option>
+                  <option value="MTA-3677">MTA-3677</option>
+                  <option value="MQY-1470">MQY-1470</option>
+                  <option value="RQR-3G49">RQR-3G49</option>
+                  <option value="OMJ-2D48">OMJ-2D48</option>
+                  <option value="SGF-4I14">SGF-4I14</option>
+                  <option value="MPD-2I67">MPD-2I67</option>
+                  <option value="MRX-6228">MRX-6228</option>
+                  <option value="GYV-2062">GYV-2062</option>
+                  <option value="MRU">MRU</option>
+                  <option value="RQR-6I53">RQR-6I53</option>
+                  <option value="ODH-9H60">ODH-9H60</option>
+                  <option value="JKW-8558">JKW-8558</option>
+                  <option value="RQE">RQE</option>
+                  <option value="RQS-0J05">RQS-0J05</option>
+                  <option value="RQS-0J57">RQS-0J57</option>
+                  <option value="RQS-2B29">RQS-2B29</option>
                   <option value="RQS-2F30">RQS-2F30</option>
+                  <option value="GKO-9775">GKO-9775</option>
+                  <option value="MQU-3D13">MQU-3D13</option>
+                  <option value="RQR-1D60">RQR-1D60</option>
+                  <option value="RQR-4J42">RQR-4J42</option>
+                  <option value="RQR-4J50">RQR-4J50</option>
+                  <option value="RQR-4J57">RQR-4J57</option>
+                  <option value="RQR-4J76">RQR-4J76</option>
+                  <option value="RQR-4J64">RQR-4J64</option>
+                  <option value="RQR-4J96">RQR-4J96</option>
+                  <option value="RQR-4J93">RQR-4J93</option>
+                  <option value="ODG-6793">ODG-6793</option>
+                  <option value="KMP-0A82">KMP-0A82</option>
+                  <option value="MSA-8D70">MSA-8D70</option>
+                  <option value="PUX">PUX</option>
+                  <option value="HNK-7G66">HNK-7G66</option>
+                  <option value="KMS-6E52">KMS-6E52</option>
+                  <option value="MQT-1H86">MQT-1H86</option>
+                  <option value="MRC-3297">MRC-3297</option>
+                  <option value="GKO-9I16">GKO-9I16</option>
+                  <option value="MQT-3G22">MQT-3G22</option>
+                  <option value="MQM-3J66">MQM-3J66</option>
+                  <option value="MQD-0D69">MQD-0D69</option>
+                  <option value="TON-5H63">TON-5H63</option>
+                  <option value="RBF-7H12">RBF-7H12</option>
+                  <option value="RQP-9C54">RQP-9C54</option>
+                  <option value="OYJ-9J13">OYJ-9J13</option>
+                  <option value="MPP-3308">MPP-3308</option>
+                  <option value="KZF-7077">KZF-7077</option>
+                  <option value="SFP-4I95">SFP-4I95</option>
+                  <option value="SFP-4J08">SFP-4J08</option>
+                  <option value="SFP-4J14">SFP-4J14</option>
+                  <option value="MQG-4H30">MQG-4H30</option>
+                  <option value="MPJ-8610">MPJ-8610</option>
+                  <option value="GTF-3H49">GTF-3H49</option>
+                  <option value="GLK-9124">GLK-9124</option>
+                  <option value="KKK-5943">KKK-5943</option>
+                  <option value="MPQ-3A25">MPQ-3A25</option>
+                  <option value="MRU-0105">MRU-0105</option>
+                  <option value="MPI-4050">MPI-4050</option>
+                  <option value="MTJ-3372">MTJ-3372</option>
+                  <option value="MQK-4E35">MQK-4E35</option>
+                  <option value="MPU-6B41">MPU-6B41</option>
+                  <option value="OVY-5256">OVY-5256</option>
+                  <option value="MRU-4798">MRU-4798</option>
+                  <option value="MQM-1B18">MQM-1B18</option>
+                  <option value="MTG-4J70">MTG-4J70</option>
+                  <option value="JCC-9B16">JCC-9B16</option>
+                  <option value="JCC-9B42">JCC-9B42</option>
+                  <option value="JCC-9B23">JCC-9B23</option>
+                  <option value="QRD-6D86">QRD-6D86</option>
+                  <option value="JCC-9B37">JCC-9B37</option>
+                  <option value="JCC-9B11">JCC-9B11</option>
+                  <option value="MSD-2029">MSD-2029</option>
+                  <option value="SJE-2I44">SJE-2I44</option>
+                  <option value="SJE-2I43">SJE-2I43</option>
+                  <option value="SJE-2I46">SJE-2I46</option>
+                  <option value="MTZ-4049">MTZ-4049</option>
+                  <option value="BWD-7F04">BWD-7F04</option>
+                  <option value="TOL-2C39">TOL-2C39</option>
+                  <option value="SFV-1F54">SFV-1F54</option>
+                  <option value="SFY-0C34">SFY-0C34</option>
+                  <option value="QEL-2A08">QEL-2A08</option>
+                  <option value="ODN-I753">ODN-I753</option>
+                  <option value="MTT-4D36">MTT-4D36</option>
+                  <option value="SJE-2I45">SJE-2I45</option>
+                  <option value="MSU-0C58">MSU-0C58</option>
+                  <option value="LVD-4G50">LVD-4G50</option>
+                  <option value="MRB-5G29">MRB-5G29</option>
+                  <option value="MSA-5970">MSA-5970</option>
+                  <option value="MSY-5I35">MSY-5I35</option>
+                  <option value="MTE-5A39">MTE-5A39</option>
+                  <option value="MSI-6D14">MSI-6D14</option>
+                  <option value="MRB-1A51">MRB-1A51</option>
+                  <option value="REP-8E35">REP-8E35</option>
+                  <option value="MQM-3I37">MQM-3I37</option>
+                  <option value="SJE-2I48">SJE-2I48</option>
+                  <option value="MSG-4H69">MSG-4H69</option>
+                  <option value="REP-8E31">REP-8E31</option>
+                  <option value="TOE-5H24">TOE-5H24</option>
+                  <option value="PVL-2C54">PVL-2C54</option>
+                  <option value="RQT-6I02">RQT-6I02</option>
+                  <option value="OYG-1102">OYG-1102</option>
+                  <option value="MQT-0B56">MQT-0B56</option>
+                  <option value="UAX-1B82">UAX-1B82</option>
+                  <option value="KNZ-7A70">KNZ-7A70</option>
+                  <option value="SGL-8B39">SGL-8B39</option>
+                  <option value="RQE-8A89">RQE-8A89</option>
+                  <option value="RQQ-1D49">RQQ-1D49</option>
+                  <option value="RBD-1H77">RBD-1H77</option>
+                  <option value="LOQ-4A73">LOQ-4A73</option>
+                  <option value="OCY-2J31">OCY-2J31</option>
+                  <option value="RQQ-4A73">RQQ-4A73</option>
+                  <option value="MQN-8C15">MQN-8C15</option>
+                  <option value="ODM-6D45">ODM-6D45</option>
+                  <option value="SFY-0234">SFY-0234</option>
+                  <option value="MSF-5J25">MSF-5J25</option>
+                  <option value="MTN-9142">MTN-9142</option>
+                  <option value="HIJ-4228">HIJ-4228</option>
+                  <option value="RQN-7J59">RQN-7J59</option>
+                  <option value="EFW-9C42">EFW-9C42</option>
+                  <option value="TXA-1A24">TXA-1A24</option>
+                  <option value="MRQ-8C19">MRQ-8C19</option>
+                  <option value="MRJ-3C99">MRJ-3C99</option>
+                  <option value="QRE-0I89">QRE-0I89</option>
+                  <option value="SGA-6C19">SGA-6C19</option>
+                  <option value="MRI-2090">MRI-2090</option>
+                  <option value="ODS-9254">ODS-9254</option>
+                  <option value="MQC-1208">MQC-1208</option>
+                  <option value="RHV-7H69">RHV-7H69</option>
+                  <option value="MQR-0A12">MQR-0A12</option>
+                  <option value="SFS-2J42">SFS-2J42</option>
+                  <option value="MPO-2201">MPO-2201</option>
+                  <option value="LAU-5E46">LAU-5E46</option>
+                  <option value="MTN-6982">MTN-6982</option>
+                  <option value="PPT-SN93">PPT-SN93</option>
+                  <option value="0VI-2G96">0VI-2G96</option>
+                  <option value="MPF-9D64">MPF-9D64</option>
+                  <option value="DAJ-9J87">DAJ-9J87</option>
+                  <option value="SGH-7C49">SGH-7C49</option>
+                  <option value="QRD-0J81">QRD-0J81</option>
+                  <option value="MQH-8401">MQH-8401</option>
+                  <option value="TIT-3E27">TIT-3E27</option>
+                  <option value="FSF-2J42">FSF-2J42</option>
+                  <option value="MQU-4G41">MQU-4G41</option>
+                  <option value="KRA-0J72">KRA-0J72</option>
+                  <option value="SFT-3E90">SFT-3E90</option>
+                  <option value="PPS-N93">PPS-N93</option>
+                  <option value="OVI-2G96">OVI-2G96</option>
+                  <option value="MSV-4709">MSV-4709</option>
+                  <option value="ODO-5257">ODO-5257</option>
+                  <option value="PPB-9I96">PPB-9I96</option>
+                  <option value="OIV-2G96">OIV-2G96</option>
+                  <option value="RQP-0G32">RQP-0G32</option>
+                  <option value="SFY-2F54">SFY-2F54</option>
+                  <option value="MPD-0A84">MPD-0A84</option>
+                  <option value="MPW-1316">MPW-1316</option>
+                  <option value="QRD-0981">QRD-0981</option>
+                  <option value="QRD-6D83">QRD-6D83</option>
+                  <option value="QRD-6D85">QRD-6D85</option>
+                  <option value="QRD-6D87">QRD-6D87</option>
+                  <option value="MQM-6040">MQM-6040</option>
+                  <option value="MPZ-6125">MPZ-6125</option>
+                  <option value="KUL-7G47">KUL-7G47</option>
+                  <option value="MPZ-8494">MPZ-8494</option>
+                  <option value="NZQ-2E94">NZQ-2E94</option>
                   <option value="OUTRO">Outro (digite abaixo)</option>
                 </select>
                 <label style={{ display: "flex", alignItems: "center", gap: "6px", whiteSpace: "nowrap" }}>
@@ -1540,7 +1744,7 @@ export default function Home() {
               <input
                 type="text"
                 list="motorista-options"
-                placeholder="Digite nome ou matrícula do motorista"
+                placeholder="Digite nome ou código do motorista"
                 value={manualData.motorista}
                 onChange={(e) => {
                   const newData = { ...manualData, motorista: e.target.value }
@@ -1630,7 +1834,7 @@ export default function Home() {
               />
 
               <label>Concorrência por Tipo:</label>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
                 <div>
                   <label style={{ fontSize: "12px", marginBottom: "5px" }}>1L:</label>
                   <input
@@ -1652,6 +1856,20 @@ export default function Home() {
                     value={manualData.concorrencia600ml}
                     onChange={(e) => {
                       const newData = { ...manualData, concorrencia600ml: e.target.value }
+                      setManualData(newData)
+                      debouncedUpdateDescriptions(newData)
+                    }}
+                    min="0"
+                    placeholder="0"
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: "12px", marginBottom: "5px" }}>600ml verde:</label>
+                  <input
+                    type="number"
+                    value={manualData.concorrencia600mlVerde}
+                    onChange={(e) => {
+                      const newData = { ...manualData, concorrencia600mlVerde: e.target.value }
                       setManualData(newData)
                       debouncedUpdateDescriptions(newData)
                     }}
@@ -2074,18 +2292,181 @@ export default function Home() {
                   }}
                 >
                   <option value="">Selecione um caminhão</option>
-                  <option value="RQR-4J50">RQR-4J50</option>
-                  <option value="RQR-4J42">RQR-4J42</option>
+                  <option value="GTJ-8E12">GTJ-8E12</option>
                   <option value="RQS-0I92">RQS-0I92</option>
-                  <option value="SFP-4J14">SFP-4J14</option>
-                  <option value="SFP-4I75">SFP-4I75</option>
-                  <option value="SFP-4J08">SFP-4J08</option>
-                  <option value="RQR-4J76">RQR-4J76</option>
+                  <option value="RQS-0E69">RQS-0E69</option>
+                  <option value="KNM-3325">KNM-3325</option>
+                  <option value="RQS-0J63">RQS-0J63</option>
+                  <option value="MRH-8192">MRH-8192</option>
+                  <option value="MRI-1083">MRI-1083</option>
+                  <option value="MRH-8669">MRH-8669</option>
+                  <option value="MQC-9961">MQC-9961</option>
+                  <option value="MQO-9513">MQO-9513</option>
+                  <option value="MQY-8756">MQY-8756</option>
+                  <option value="MRH-8196">MRH-8196</option>
+                  <option value="MRH-8069">MRH-8069</option>
+                  <option value="MTA-3677">MTA-3677</option>
+                  <option value="MQY-1470">MQY-1470</option>
+                  <option value="RQR-3G49">RQR-3G49</option>
+                  <option value="OMJ-2D48">OMJ-2D48</option>
+                  <option value="SGF-4I14">SGF-4I14</option>
+                  <option value="MPD-2I67">MPD-2I67</option>
+                  <option value="MRX-6228">MRX-6228</option>
+                  <option value="GYV-2062">GYV-2062</option>
+                  <option value="MRU">MRU</option>
+                  <option value="RQR-6I53">RQR-6I53</option>
+                  <option value="ODH-9H60">ODH-9H60</option>
+                  <option value="JKW-8558">JKW-8558</option>
+                  <option value="RQE">RQE</option>
+                  <option value="RQS-0J05">RQS-0J05</option>
+                  <option value="RQS-0J57">RQS-0J57</option>
+                  <option value="RQS-2B29">RQS-2B29</option>
+                  <option value="RQS-2F30">RQS-2F30</option>
+                  <option value="GKO-9775">GKO-9775</option>
+                  <option value="MQU-3D13">MQU-3D13</option>
                   <option value="RQR-1D60">RQR-1D60</option>
-                  <option value="SFP-4I95">SFP-4I95</option>
+                  <option value="RQR-4J42">RQR-4J42</option>
+                  <option value="RQR-4J50">RQR-4J50</option>
+                  <option value="RQR-4J57">RQR-4J57</option>
+                  <option value="RQR-4J76">RQR-4J76</option>
+                  <option value="RQR-4J64">RQR-4J64</option>
+                  <option value="RQR-4J96">RQR-4J96</option>
                   <option value="RQR-4J93">RQR-4J93</option>
+                  <option value="ODG-6793">ODG-6793</option>
+                  <option value="KMP-0A82">KMP-0A82</option>
+                  <option value="MSA-8D70">MSA-8D70</option>
+                  <option value="PUX">PUX</option>
+                  <option value="HNK-7G66">HNK-7G66</option>
+                  <option value="KMS-6E52">KMS-6E52</option>
+                  <option value="MQT-1H86">MQT-1H86</option>
+                  <option value="MRC-3297">MRC-3297</option>
+                  <option value="GKO-9I16">GKO-9I16</option>
+                  <option value="MQT-3G22">MQT-3G22</option>
+                  <option value="MQM-3J66">MQM-3J66</option>
+                  <option value="MQD-0D69">MQD-0D69</option>
+                  <option value="TON-5H63">TON-5H63</option>
+                  <option value="RBF-7H12">RBF-7H12</option>
+                  <option value="RQP-9C54">RQP-9C54</option>
+                  <option value="OYJ-9J13">OYJ-9J13</option>
+                  <option value="MPP-3308">MPP-3308</option>
+                  <option value="KZF-7077">KZF-7077</option>
+                  <option value="SFP-4I95">SFP-4I95</option>
+                  <option value="SFP-4J08">SFP-4J08</option>
+                  <option value="SFP-4J14">SFP-4J14</option>
+                  <option value="MQG-4H30">MQG-4H30</option>
+                  <option value="MPJ-8610">MPJ-8610</option>
+                  <option value="GTF-3H49">GTF-3H49</option>
+                  <option value="GLK-9124">GLK-9124</option>
+                  <option value="KKK-5943">KKK-5943</option>
+                  <option value="MPQ-3A25">MPQ-3A25</option>
+                  <option value="MRU-0105">MRU-0105</option>
+                  <option value="MPI-4050">MPI-4050</option>
+                  <option value="MTJ-3372">MTJ-3372</option>
+                  <option value="MQK-4E35">MQK-4E35</option>
+                  <option value="MPU-6B41">MPU-6B41</option>
+                  <option value="OVY-5256">OVY-5256</option>
+                  <option value="MRU-4798">MRU-4798</option>
+                  <option value="MQM-1B18">MQM-1B18</option>
+                  <option value="MTG-4J70">MTG-4J70</option>
+                  <option value="JCC-9B16">JCC-9B16</option>
+                  <option value="JCC-9B42">JCC-9B42</option>
+                  <option value="JCC-9B23">JCC-9B23</option>
+                  <option value="QRD-6D86">QRD-6D86</option>
+                  <option value="JCC-9B37">JCC-9B37</option>
+                  <option value="JCC-9B11">JCC-9B11</option>
+                  <option value="MSD-2029">MSD-2029</option>
+                  <option value="SJE-2I44">SJE-2I44</option>
+                  <option value="SJE-2I43">SJE-2I43</option>
+                  <option value="SJE-2I46">SJE-2I46</option>
+                  <option value="MTZ-4049">MTZ-4049</option>
+                  <option value="BWD-7F04">BWD-7F04</option>
+                  <option value="TOL-2C39">TOL-2C39</option>
+                  <option value="SFV-1F54">SFV-1F54</option>
+                  <option value="SFY-0C34">SFY-0C34</option>
+                  <option value="QEL-2A08">QEL-2A08</option>
+                  <option value="ODN-I753">ODN-I753</option>
+                  <option value="MTT-4D36">MTT-4D36</option>
+                  <option value="SJE-2I45">SJE-2I45</option>
+                  <option value="MSU-0C58">MSU-0C58</option>
+                  <option value="LVD-4G50">LVD-4G50</option>
+                  <option value="MRB-5G29">MRB-5G29</option>
+                  <option value="MSA-5970">MSA-5970</option>
+                  <option value="MSY-5I35">MSY-5I35</option>
+                  <option value="MTE-5A39">MTE-5A39</option>
+                  <option value="MSI-6D14">MSI-6D14</option>
+                  <option value="MRB-1A51">MRB-1A51</option>
+                  <option value="REP-8E35">REP-8E35</option>
+                  <option value="MQM-3I37">MQM-3I37</option>
+                  <option value="SJE-2I48">SJE-2I48</option>
+                  <option value="MSG-4H69">MSG-4H69</option>
+                  <option value="REP-8E31">REP-8E31</option>
+                  <option value="TOE-5H24">TOE-5H24</option>
+                  <option value="PVL-2C54">PVL-2C54</option>
+                  <option value="RQT-6I02">RQT-6I02</option>
+                  <option value="OYG-1102">OYG-1102</option>
+                  <option value="MQT-0B56">MQT-0B56</option>
+                  <option value="UAX-1B82">UAX-1B82</option>
+                  <option value="KNZ-7A70">KNZ-7A70</option>
+                  <option value="SGL-8B39">SGL-8B39</option>
+                  <option value="RQE-8A89">RQE-8A89</option>
+                  <option value="RQQ-1D49">RQQ-1D49</option>
+                  <option value="RBD-1H77">RBD-1H77</option>
+                  <option value="LOQ-4A73">LOQ-4A73</option>
+                  <option value="OCY-2J31">OCY-2J31</option>
+                  <option value="RQQ-4A73">RQQ-4A73</option>
+                  <option value="MQN-8C15">MQN-8C15</option>
+                  <option value="ODM-6D45">ODM-6D45</option>
+                  <option value="SFY-0234">SFY-0234</option>
+                  <option value="MSF-5J25">MSF-5J25</option>
+                  <option value="MTN-9142">MTN-9142</option>
+                  <option value="HIJ-4228">HIJ-4228</option>
+                  <option value="RQN-7J59">RQN-7J59</option>
+                  <option value="EFW-9C42">EFW-9C42</option>
+                  <option value="TXA-1A24">TXA-1A24</option>
+                  <option value="MRQ-8C19">MRQ-8C19</option>
+                  <option value="MRJ-3C99">MRJ-3C99</option>
+                  <option value="QRE-0I89">QRE-0I89</option>
+                  <option value="SGA-6C19">SGA-6C19</option>
+                  <option value="MRI-2090">MRI-2090</option>
+                  <option value="ODS-9254">ODS-9254</option>
+                  <option value="MQC-1208">MQC-1208</option>
+                  <option value="RHV-7H69">RHV-7H69</option>
+                  <option value="MQR-0A12">MQR-0A12</option>
+                  <option value="SFS-2J42">SFS-2J42</option>
+                  <option value="MPO-2201">MPO-2201</option>
+                  <option value="LAU-5E46">LAU-5E46</option>
+                  <option value="MTN-6982">MTN-6982</option>
+                  <option value="PPT-SN93">PPT-SN93</option>
+                  <option value="0VI-2G96">0VI-2G96</option>
+                  <option value="MPF-9D64">MPF-9D64</option>
+                  <option value="DAJ-9J87">DAJ-9J87</option>
+                  <option value="SGH-7C49">SGH-7C49</option>
                   <option value="QRD-0J81">QRD-0J81</option>
-                  <option value="RQS-2F30">RQS-2F30</option> {/* Novo modelo de caminhão adicionado */}
+                  <option value="MQH-8401">MQH-8401</option>
+                  <option value="TIT-3E27">TIT-3E27</option>
+                  <option value="FSF-2J42">FSF-2J42</option>
+                  <option value="MQU-4G41">MQU-4G41</option>
+                  <option value="KRA-0J72">KRA-0J72</option>
+                  <option value="SFT-3E90">SFT-3E90</option>
+                  <option value="PPS-N93">PPS-N93</option>
+                  <option value="OVI-2G96">OVI-2G96</option>
+                  <option value="MSV-4709">MSV-4709</option>
+                  <option value="ODO-5257">ODO-5257</option>
+                  <option value="PPB-9I96">PPB-9I96</option>
+                  <option value="OIV-2G96">OIV-2G96</option>
+                  <option value="RQP-0G32">RQP-0G32</option>
+                  <option value="SFY-2F54">SFY-2F54</option>
+                  <option value="MPD-0A84">MPD-0A84</option>
+                  <option value="MPW-1316">MPW-1316</option>
+                  <option value="QRD-0981">QRD-0981</option>
+                  <option value="QRD-6D83">QRD-6D83</option>
+                  <option value="QRD-6D85">QRD-6D85</option>
+                  <option value="QRD-6D87">QRD-6D87</option>
+                  <option value="MQM-6040">MQM-6040</option>
+                  <option value="MPZ-6125">MPZ-6125</option>
+                  <option value="KUL-7G47">KUL-7G47</option>
+                  <option value="MPZ-8494">MPZ-8494</option>
+                  <option value="NZQ-2E94">NZQ-2E94</option>
                   <option value="OUTRO">Outro</option>
                 </select>
                 <label style={{ display: "flex", alignItems: "center", gap: "6px", whiteSpace: "nowrap" }}>
@@ -2139,7 +2520,7 @@ export default function Home() {
                 onChange={(e) => setEditForm({ ...editForm, motorista: e.target.value })}
                 disabled={editForm.frete}
                 style={{ marginBottom: "10px" }}
-                placeholder="Digite nome ou matrícula do motorista"
+                placeholder="Digite nome ou código do motorista"
               />
 
               <label>Bicada:</label>
@@ -2151,7 +2532,7 @@ export default function Home() {
               />
 
               <label>Concorrência por Tipo:</label>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "5px", marginBottom: "10px" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "5px", marginBottom: "10px" }}>
                 <div>
                   <label style={{ fontSize: "12px" }}>1L:</label>
                   <input
@@ -2168,6 +2549,16 @@ export default function Home() {
                     type="number"
                     value={editForm.concorrencia600ml}
                     onChange={(e) => setEditForm({ ...editForm, concorrencia600ml: e.target.value })}
+                    min="0"
+                    placeholder="0"
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: "12px" }}>600ml verde:</label>
+                  <input
+                    type="number"
+                    value={editForm.concorrencia600mlVerde}
+                    onChange={(e) => setEditForm({ ...editForm, concorrencia600mlVerde: e.target.value })}
                     min="0"
                     placeholder="0"
                   />
@@ -2226,7 +2617,7 @@ export default function Home() {
         </datalist>
         <datalist id="motorista-options">
           {driverList.map((motorista) => (
-            <option key={`${motorista.matricula}-${motorista.nome}`} value={`${motorista.matricula} ${motorista.nome}`} />
+            <option key={`${motorista.matricula}-${motorista.nome}`} value={`${motorista.matricula} - ${motorista.nome}`} />
           ))}
         </datalist>
 
