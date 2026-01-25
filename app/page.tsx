@@ -262,7 +262,7 @@ export default function Home() {
         const resolvedData = getRegistroData(resolvedTurno, newData.refugoAtrasado, newData.dataRefugo)
         dados[index] = {
           ...dados[index],
-          caminhao: newData.caminhao || dados[index].caminhao,
+          caminhao: newData.caminhao ? formatTruckCode(newData.caminhao) : dados[index].caminhao,
           bicada: newData.bicada || dados[index].bicada,
           concorrencia1L: newData.concorrencia1L || dados[index].concorrencia1L,
           concorrencia600ml: newData.concorrencia600ml || dados[index].concorrencia600ml,
@@ -1114,7 +1114,7 @@ export default function Home() {
       }
 
       function finalizarProcessamento(canvas, ctx) {
-        const caminhao = manualData.caminhao || "Não informado"
+        const caminhao = manualData.caminhao ? formatTruckCode(manualData.caminhao) : "Não informado"
         const bicada = manualData.bicada || "0"
         const concorrencia1L = manualData.concorrencia1L || "0"
         const concorrencia600ml = manualData.concorrencia600ml || "0"
@@ -1299,6 +1299,7 @@ export default function Home() {
     if (editingItem && window.atualizarImagemEditada) {
       const dadosAtualizados = {
         ...editForm,
+        caminhao: editForm.caminhao ? formatTruckCode(editForm.caminhao) : editForm.caminhao,
         timestamp: editingItem,
       }
       window.atualizarImagemEditada(editingItem, dadosAtualizados)
